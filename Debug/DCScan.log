@@ -1,9 +1,0 @@
-﻿  Task.cpp
-  Timestamp.cpp
-  worker_threads.cpp
-h:\data\c++\dcscan\dcscan\src\core\worker_threads.cpp(15): warning C4244: 'argument': conversion from 'uInt64' to 'uInt32', possible loss of data
-h:\data\c++\dcscan\dcscan\src\core\worker_threads.cpp(52): warning C4018: '<': signed/unsigned mismatch
-  main.cpp
-  Generating Code...
-  LINK : H:\Data\C++\DCScan\Debug\DCScan.exe not found or not built by the last incremental link; performing full link
-  DCScan.vcxproj -> H:\Data\C++\DCScan\Debug\DCScan.exe

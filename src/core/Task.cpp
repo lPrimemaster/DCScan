@@ -1,6 +1,7 @@
 #include "Task.h"
 #include <NIDAQmx.h>
 #include "base/common.h"
+#include "base/Timer.h"
 
 Task::Task(const std::string& taskname) : name(taskname)
 {
@@ -24,7 +25,6 @@ Task::~Task()
 void Task::start() const
 {
 	int32 error = DAQmxStartTask(handle);
-
 	if (!handleError(error, "Task::start()"))
 	{
 		std::cerr << "Starting task " << name << std::endl;

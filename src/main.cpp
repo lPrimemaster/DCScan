@@ -2,7 +2,7 @@
 #include <fstream>
 #include <string>
 #include "core/worker_threads.h"
-#include "core/base/Timestamp.h"
+#include "core/base/Timer.h"
 
 #define NAME "DCScan"
 #define VERSION "2.0-b1"
@@ -17,7 +17,10 @@
 
 int main(int argc, char* argv[])
 {
-	std::cout << Timestamp::apiTimeSystemClockString() << std::endl;
+	Timestamp ts = Timer::apiTimeSystemHRC();
+
+	std::cout << "Program started... " << std::endl << "Current time - " << ts.year << "/" << ts.month << "/" << ts.day << " " << ts.hour << ":" << ts.min << ":" << ts.sec << ":" << ts.millis << ":" << ts.micros << ":" << ts.nanos << std::endl;
+
 	std::ofstream out(NAME "-" VERSION ".log");
 	std::streambuf *cerrbuf = std::cerr.rdbuf();
 	std::cerr.rdbuf(out.rdbuf());
@@ -48,8 +51,7 @@ int main(int argc, char* argv[])
 
 	FILE* f;
 	fopen_s(&f, "data_out.csv", "w");
-
-	fprintf(f, "Packet,Point,Data,Timestamp,\n");
+	fprintf(f, "Packet,Point,Data,Timestamp [Software],Timestamp [Hardware][us],Packet Delta [ms - us]\n");
 
 	auto tid_0 = manager.addThread(acquireThread, &doptions);
 	auto tid_1 = manager.addThread(processThread, f);
@@ -61,12 +63,12 @@ int main(int argc, char* argv[])
 		val = getchar();
 	}
 
-	std::cout << Timestamp::apiUptimeString() << std::endl;
 
 	manager.joinThreadSync(tid_0);
 	manager.joinThreadSync(tid_1);
 
 	fclose(f);
 
+	std::cout << "Program uptime: " << Timer::apiUptimeString() << std::endl;
 	return 0;
 }

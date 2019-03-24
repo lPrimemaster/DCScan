@@ -1,5 +1,6 @@
 #pragma once
 #include "Task.h"
+#include "base/Timer.h"
 #include <mutex>
 #include <deque>
 
@@ -8,6 +9,7 @@ struct DataPacket
 	float64* data;
 	size_t data_size;
 	int32 data_read;
+	long long software_tor_ns;
 };
 
 struct CallbackPacket

@@ -6,9 +6,6 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-import sip
-sip.setapi('QString', 2)
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 import numpy as np
 
@@ -255,17 +252,6 @@ class Ui_MainWindow(object):
         self.actionLicenses.setText(_translate("MainWindow", "Licenses"))
 			
 			
-class UpdateThread(QtCore.Qthread):
-	received = QtCore.pyqtSignal([str], [unicode])
-	
-	def randomTemp1(self):
-		self.lcdNumber_CTemp1.setProperty("value", np.random.randn(1))
-	
-	def run(self):
-		while(True):
-			self.received.emit('')
-			
-		
 import resources_rc
 
 if __name__ == "__main__":
@@ -274,10 +260,6 @@ if __name__ == "__main__":
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
-	
-	t = UpdateThread()
-	t.received.connect()
-	
     MainWindow.show()
     sys.exit(app.exec_())
 

@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\CAPI">
+      <UniqueIdentifier>{6431ca32-cda7-400d-8074-14003c54dae0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -33,7 +36,10 @@
     <ClCompile Include="src\core\worker_callbacks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\core\base\Timestamp.cpp">
+    <ClCompile Include="src\core\api\DCScan.c">
+      <Filter>Source Files\CAPI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\base\Timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -53,7 +59,10 @@
     <ClInclude Include="src\core\worker_callbacks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\core\base\Timestamp.h">
+    <ClInclude Include="src\core\api\include\DCScan.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\base\Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

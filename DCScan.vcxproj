@@ -77,6 +77,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>deps\DAQmx ANSI C Dev\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_API_EXPORTING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>deps\DAQmx ANSI C Dev\lib\msvc;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -132,8 +133,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\core\api\DCScan.c" />
     <ClCompile Include="src\core\base\common.cpp" />
-    <ClCompile Include="src\core\base\Timestamp.cpp" />
+    <ClCompile Include="src\core\base\Timer.cpp" />
     <ClCompile Include="src\core\Task.cpp" />
     <ClCompile Include="src\core\worker_callbacks.cpp" />
     <ClCompile Include="src\core\worker_threads.cpp" />
@@ -141,8 +143,9 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\core\api\include\DCScan.h" />
     <ClInclude Include="src\core\base\common.h" />
-    <ClInclude Include="src\core\base\Timestamp.h" />
+    <ClInclude Include="src\core\base\Timer.h" />
     <ClInclude Include="src\core\Task.h" />
     <ClInclude Include="src\core\worker_callbacks.h" />
     <ClInclude Include="src\core\worker_threads.h" />

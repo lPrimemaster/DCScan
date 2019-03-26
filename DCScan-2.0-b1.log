@@ -1,9 +1,33 @@
 Initializing task task0
-Task task0 - Added channel [Voltage Channel]: dev1/ai0
-Task task0 - Added timer @ 10kS/s
-Task task0 - Registered Event Callback: ENC
-Starting task task0
+Task::addChannel() - VoltageChannel returned error: Device cannot be accessed.  Possible causes:
+
+Device is no longer present in the system.
+Device is not powered.
+Device is powered, but was temporarily without power.
+Device and/or chassis driver support may have been removed.
+Device is damaged.
+
+Ensure the device is properly connected and turned on. Ensure the device and/or chassis is supported in the current version of the driver. Check the device's status in NI MAX. Turn the computer off and on again. If you suspect that the device is damaged, contact National Instruments at ni.com/support.
+Device Specified: dev1
+
+Task Name: task0
+
+Status Code: -201003
+Task task0 with rate @ 10 kS/s exceeds max device sample rate of 0 kS/s
+Setting the rate to the max device rate [0 kS/s]
+Task::addTimer() returned error: Specified operation cannot be performed when there are no devices in the task.
+Task Name: task0
+
+Status Code: -200477
+Task::addEventCallback() returned error: Specified operation cannot be performed when there are no devices in the task.
+Task Name: task0
+
+Status Code: -200477
+Task::start() returned error: Specified operation cannot be performed when there are no channels in the task.
+Task Name: task0
+
+Status Code: -200478
 Stopping task task0
 Ending task task0
-Thread 0x4688 joined successfully
-Thread 0x23a4 joined successfully
+Thread 0x3598 joined successfully
+Thread 0x178c joined successfully

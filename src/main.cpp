@@ -5,7 +5,7 @@
 #include "core/base/Timer.h"
 #include "core/base/counter.h"
 
-
+#include "core/io/usb_serial.h"
 
 #define NAME "DCScan"
 #define VERSION "2.0-b1"
@@ -17,25 +17,6 @@
 //TODOS : César
 //Motors communication / control implementation
 //Api implementation for use in external GUI (for : Tiago ?)
-
-//Test counter func
-double gaussianFuncSum(double x, int b, double u, double o)
-{
-	const int N = 20;
-	const double sigma = o;
-	const double mu = u;
-
-	double fValue = 0.0;
-
-	for (int i = 0; i < N; i++)
-	{
-		double exponent = ((x - (mu + b * i * 0.1)) / sigma) * ((x - (mu + b * i * 0.1)) / sigma);
-		double A = 5.0 * sin(i);
-		fValue += (A / (sigma * sqrt(2 * 3.14159264358979))) * exp(-0.5 * exponent);
-	}
-
-	return fValue;
-}
 
 int main(int argc, char* argv[])
 {
@@ -85,41 +66,16 @@ int main(int argc, char* argv[])
 		val = getchar();
 	}
 
-	float64 data[1000];
-
-	for (int i = 0; i < 1000; i++)
-	{
-		double x = i / 100.0;
-		data[i] = gaussianFuncSum(x, 16, -8.9, 0.45);
-	}
-
-	std::cout << std::dec << std::endl;
-
-	std::cout << "Number of counts in f(x), [0,10] with [m,M] = [1.5,4.4]: ";
-	auto tp1 = std::chrono::high_resolution_clock::now();
-	auto v1 = Counter::schmittTriggerData(data, 1000, 1.5, 4.4);
-	auto diff1 = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tp1).count();
-	std::cout << "ST ptime (us): " << diff1 << std::endl; // => about 3-4 us on my machine : César
-	std::cout << v1 << std::endl;
-
-	for (int i = 0; i < 1000; i++)
-	{
-		double x = (i + 1000) / 100.0;
-		data[i] = gaussianFuncSum(x, 16, -8.9, 0.45);
-	}
-
-	std::cout << "Number of counts in f(x), [10,20] with [m,M] = [1.5,4.4]: ";
-	auto tp2 = std::chrono::high_resolution_clock::now();
-	auto v2 = Counter::schmittTriggerData(data, 1000, 1.5, 4.4);
-	auto diff2 = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tp2).count();
-	std::cout << "ST ptime (us): " << diff2 << std::endl;
-	std::cout << v2 << std::endl;
-
-
 	manager.joinThreadSync(tid_0);
 	manager.joinThreadSync(tid_1);
 
 	fclose(f);
+
+	libusb_context ** ctx = NULL;
+
+	usb_serial_init_libusb(ctx, 0);
+	usb_serial_list_devices(ctx);
+	usb_serial_deinit_libusb(ctx);
 
 	std::cout << "Program uptime: " << Timer::apiUptimeString() << std::endl;
 	return 0;

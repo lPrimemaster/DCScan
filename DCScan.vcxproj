@@ -76,12 +76,13 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>deps\DAQmx ANSI C Dev\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>deps\DAQmx ANSI C Dev\include;H:\Data\C++\DCScan\DCScan\deps\libusb-1.0.22\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_API_EXPORTING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>deps\DAQmx ANSI C Dev\lib\msvc;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>NIDAQmx.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>deps\DAQmx ANSI C Dev\lib\msvc;H:\Data\C++\DCScan\DCScan\deps\libusb-1.0.22\MS32\static;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>NIDAQmx.lib;libusb-1.0.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -137,6 +138,7 @@
     <ClCompile Include="src\core\base\common.cpp" />
     <ClCompile Include="src\core\base\counter.cpp" />
     <ClCompile Include="src\core\base\Timer.cpp" />
+    <ClCompile Include="src\core\io\usb_serial.c" />
     <ClCompile Include="src\core\Task.cpp" />
     <ClCompile Include="src\core\worker_callbacks.cpp" />
     <ClCompile Include="src\core\worker_threads.cpp" />
@@ -148,6 +150,7 @@
     <ClInclude Include="src\core\base\common.h" />
     <ClInclude Include="src\core\base\counter.h" />
     <ClInclude Include="src\core\base\Timer.h" />
+    <ClInclude Include="src\core\io\usb_serial.h" />
     <ClInclude Include="src\core\Task.h" />
     <ClInclude Include="src\core\worker_callbacks.h" />
     <ClInclude Include="src\core\worker_threads.h" />

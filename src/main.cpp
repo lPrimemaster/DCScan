@@ -20,20 +20,24 @@
 
 int main(int argc, char* argv[])
 {
-	Timestamp ts = Timer::apiTimeSystemHRC();
-
-	std::cout << "Program started... " << std::endl << "Current time - " << ts.year << "/" << ts.month << "/" << ts.day << " " << ts.hour << ":" << ts.min << ":" << ts.sec << ":" << ts.millis << ":" << ts.micros << ":" << ts.nanos << std::endl;
-
+	//Redirect cerr to file
 	std::ofstream out(NAME "-" VERSION ".log");
 	std::streambuf *cerrbuf = std::cerr.rdbuf();
 	std::cerr.rdbuf(out.rdbuf());
 
-	std::cout << "Control thread [0x" << std::hex << std::this_thread::get_id() << "] started." << std::endl;
+	//Redirect cout to modified printf
+	std::stringstream outbuffer;
+	std::streambuf *outbuf = std::cout.rdbuf();
+	std::cout.rdbuf(outbuffer.rdbuf());
 
 	ThreadManager manager;
 
-	AcquireDataOptions doptions;
+	Timestamp ts = Timer::apiTimeSystemHRC();
 
+	std::cout << "Program started... " << std::endl << "Current time - " << ts.year << "/" << ts.month << "/" << ts.day << " " << ts.hour << ":" << ts.min << ":" << ts.sec << ":" << ts.millis << ":" << ts.micros << ":" << ts.nanos << std::endl;
+	std::cout << "Control thread [0x" << std::hex << std::this_thread::get_id() << "] started." << std::endl;
+
+	AcquireDataOptions doptions;
 	TaskProperties properties;
 
 	properties.name = "task0";
@@ -59,12 +63,12 @@ int main(int argc, char* argv[])
 	auto tid_0 = manager.addThread(acquireThread, &doptions);
 	auto tid_1 = manager.addThread(processThread, f);
 
-	auto val = 'r';
+	printf("%s", outbuffer.str().c_str());
+	outbuffer.clear();
 
-	while ( val != 's')
-	{
-		val = getchar();
-	}
+	std::this_thread::sleep_for(std::chrono::seconds(5));
+
+	ScrollByRelativeCoord(7);
 
 	manager.joinThreadSync(tid_0);
 	manager.joinThreadSync(tid_1);
@@ -92,5 +96,16 @@ int main(int argc, char* argv[])
 	usb_serial_deinit_libusb(ctx);
 
 	std::cout << "Program uptime: " << Timer::apiUptimeString() << std::endl;
+
+	printf("%s", outbuffer.str().c_str());
+	outbuffer.clear();
+
+	auto val = 'r';
+
+	while ( val != 's')
+	{
+		val = getchar();
+	}
+
 	return 0;
 }

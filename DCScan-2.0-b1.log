@@ -1,3 +1,4 @@
+Thread 0x225c is being detached
 Initializing task task0
 Task task0 - Added channel [Voltage Channel]: dev1/ai0
 Task task0 - Added timer @ 10kS/s
@@ -5,5 +6,5 @@ Task task0 - Registered Event Callback: ENC
 Starting task task0
 Stopping task task0
 Ending task task0
-Thread 0x3608 joined successfully
-Thread 0x2e50 joined successfully
+Thread 0x32a4 joined successfully
+Thread 0x3438 joined successfully

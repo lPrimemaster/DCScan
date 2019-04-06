@@ -74,7 +74,21 @@ int main(int argc, char* argv[])
 	libusb_context ** ctx = NULL;
 
 	usb_serial_init_libusb(ctx, 0);
-	usb_serial_list_devices(ctx);
+	usb_serial_device_list lst;
+	usb_serial_get_device_list(ctx, &lst);
+	usb_serial_print_device_list(&lst);
+
+	//lst works here for access only
+
+	ssize_t s = usb_serial_get_device_index_from_id(&lst, 0x0717B);
+
+	std::cout << std::dec << "Index of found device [by id]: " << s << std::endl;
+
+	s = usb_serial_get_device_index_from_name(&lst, "USB Optical Mouse");
+
+	std::cout << std::dec << "Index of found device [by name]: " << s << std::endl;
+
+	usb_serial_free_device_list(&lst);
 	usb_serial_deinit_libusb(ctx);
 
 	std::cout << "Program uptime: " << Timer::apiUptimeString() << std::endl;

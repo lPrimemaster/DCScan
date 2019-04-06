@@ -56,7 +56,6 @@ void print_device(libusb_device* dev, int level)
 	char description[256];
 	char string[256];
 	int dd_ret;
-	uint8_t i;
 
 	dd_ret = libusb_get_device_descriptor(dev, &desc);
 	if (dd_ret < 0)
@@ -102,11 +101,10 @@ void usb_serial_list_devices(libusb_context ** context)
 {
 	libusb_device ** list;
 	ssize_t cnt = libusb_get_device_list(context, &list);
-	int error = 0;
 
 	if (cnt < 0)
 	{
-		fprintf_s(stderr, "libusb: Invalid device list discovery. Error: %#08X\n", error);
+		fprintf_s(stderr, "libusb: Invalid device list discovery. Error: %#08X\n", cnt);
 		return;
 	}
 	else
@@ -122,4 +120,109 @@ void usb_serial_list_devices(libusb_context ** context)
 	}
 
 	libusb_free_device_list(list, 1);
+}
+
+void usb_serial_get_device_list(libusb_context ** context, usb_serial_device_list * list)
+{
+	ssize_t cnt = libusb_get_device_list(context, &list->list);
+
+	if (cnt < 0)
+	{
+		fprintf_s(stderr, "libusb: Invalid device list discovery. Error: %#08X\n", cnt);
+		list->count = -1;
+	}
+	else
+	{
+		list->count = cnt;
+	}
+}
+
+void usb_serial_free_device_list(usb_serial_device_list * list)
+{
+	if(list->list != NULL && list->count > 0)
+		libusb_free_device_list(list->list, 1);
+}
+
+void usb_serial_print_device_list(usb_serial_device_list * list)
+{
+	if (list->list != NULL && list->count > 0)
+	{
+		putchar('\n');
+		printf("USB Serial Devices List\n");
+		for (int i = 0; i < list->count; i++)
+		{
+			libusb_device * device = list->list[i];
+			print_device(device, 0);
+		}
+		putchar('\n');
+	}
+}
+
+ssize_t usb_serial_get_device_index_from_id(usb_serial_device_list * list, uint16_t id)
+{
+	for (int i = 0; i < list->count; i++)
+	{
+		libusb_device* local_device = list->list[i];
+		struct libusb_device_descriptor desc;
+		libusb_device_handle* handle = NULL;
+		char description[256];
+		char string[256];
+		int dd_ret;
+
+		dd_ret = libusb_get_device_descriptor(local_device, &desc);
+		if (dd_ret < 0)
+		{
+			fprintf_s(stderr, "libusb: Failed to get device descriptor. Error: %#08X\n", dd_ret);
+		}
+		dd_ret = libusb_open(local_device, &handle);
+		if (LIBUSB_SUCCESS != dd_ret)
+		{
+			if (desc.idProduct == id)
+			{
+				//Found device based on id
+				return i;
+			}
+			//Did not find device
+			libusb_close(handle);
+		}
+	}
+	return -1;
+}
+
+ssize_t usb_serial_get_device_index_from_name(usb_serial_device_list * list, const char* name)
+{
+	for (int i = 0; i < list->count; i++)
+	{
+		libusb_device* local_device = list->list[i];
+		struct libusb_device_descriptor desc;
+		libusb_device_handle* handle = NULL;
+		char string[256];
+		int dd_ret;
+
+		dd_ret = libusb_get_device_descriptor(local_device, &desc);
+		if (dd_ret < 0)
+		{
+			fprintf_s(stderr, "libusb: Failed to get device descriptor. Error: %#08X\n", dd_ret);
+		}
+		dd_ret = libusb_open(local_device, &handle);
+		if (LIBUSB_SUCCESS == dd_ret)
+		{
+			if (desc.iProduct)
+			{
+				dd_ret = libusb_get_string_descriptor_ascii(handle, desc.iProduct, string, sizeof(string));
+				if (dd_ret > 0)
+				{
+					int value = strcmp(string, name);
+					if (value == 0)
+					{
+						//Found device
+						return i;
+					}
+				}
+			}
+			//Did not find device
+			libusb_close(handle);
+		}
+	}
+	return -1;
 }

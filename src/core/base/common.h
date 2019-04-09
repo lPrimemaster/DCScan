@@ -2,7 +2,7 @@
 #include <iostream>
 #include <NIDAQmx.h>
 
-//Handles a error from the NIDAQmx library
+//Handles an error from the NIDAQmx library
 bool handleError(int32 error, const char* funcName);
 
 // Returns in the closed interval [0, max]
@@ -18,4 +18,4 @@ int ScrollByAbsoluteCoord(int iRows);
 int ScrollByRelativeCoord(int iRows);
 
 //Custom printf to work with WinApi
-void wc_flush(std::stringstream * ss);
+void console_flush(std::stringstream * ss);

@@ -1,4 +1,5 @@
 #include "ThreadManager.h"
+#include "../ctrl/CFlush.h"
 #include <string>
 #include <sstream>
 #ifdef _WIN32
@@ -10,8 +11,6 @@ ThreadManager::ThreadManager()
 	pool_used = new bool[THREAD_CONCURRENCY];
 	for (int i = 0; i < THREAD_CONCURRENCY; i++) pool_used[i] = false;
 
-	random_seed();
-
 #ifdef _WIN32
 	//HANDLE hConsole_c = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
 	HANDLE hConsole_c = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -20,7 +19,7 @@ ThreadManager::ThreadManager()
 	//Assuming the console size wont be changed
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 	int columns, rows;
-	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+	GetConsoleScreenBufferInfo(hConsole_c, &csbi);
 	columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
 	rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 
@@ -37,8 +36,6 @@ ThreadManager::ThreadManager()
 		//This thread does not respond to the THREAD_HALT flag
 		while (deinit.load() != 1)
 		{
-
-
 #ifdef _WIN32
 			for (int i = 0; i < THREAD_CONCURRENCY; i++)
 			{
@@ -47,6 +44,7 @@ ThreadManager::ThreadManager()
 				DWORD len = strlen(str[ri]);
 				DWORD dwBytesWritten = 0;
 				WriteConsoleOutputCharacter(hConsole_c, str[ri], len, pos, &dwBytesWritten);
+				//CFlush::FlushConsoleString();
 #endif
 			}
 			for (int i = 0; i < THREAD_CONCURRENCY; i++)
@@ -91,15 +89,8 @@ ThreadManager::ThreadManager()
 			}
 			//Prevent this gui from showing up too fast
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
-			DWORD dwBytesWrittenSC = 0;
-			FillConsoleOutputCharacter(hConsole_c, (TCHAR) ' ', csbi.dwSize.X * csbi.dwSize.Y,
-				COORD{ 0, SHORT(y - THREAD_CONCURRENCY) }, &dwBytesWrittenSC);
-			std::this_thread::yield();
+			CFlush::ClearConsole(y - THREAD_CONCURRENCY, THREAD_CONCURRENCY + 1);
 		}
-
-#ifdef _WIN32
-		CloseHandle(hConsole_c);
-#endif
 		//Flag ending
 		deinit.store(2);
 	};
@@ -144,7 +135,7 @@ ThreadManager::~ThreadManager()
 std::thread::id ThreadManager::addThread(std::function<void(std::atomic<int>*, void*)> threadFunction, void* threadData)
 {
 	std::thread * thread;
-	/* Init a thread with the running status obviously */
+	/* Init a thread with the running status */
 	std::atomic<int> * flag = new std::atomic<int>(THREAD_RUN);
 	if (threadData != nullptr)
 		thread = new std::thread(threadFunction, flag, threadData);

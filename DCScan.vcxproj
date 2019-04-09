@@ -142,6 +142,7 @@
     <ClCompile Include="src\core\Task.cpp" />
     <ClCompile Include="src\core\worker_callbacks.cpp" />
     <ClCompile Include="src\core\worker_threads.cpp" />
+    <ClCompile Include="src\ctrl\CFlush.cpp" />
     <ClCompile Include="src\ctrl\ThreadManager.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
@@ -154,6 +155,7 @@
     <ClInclude Include="src\core\Task.h" />
     <ClInclude Include="src\core\worker_callbacks.h" />
     <ClInclude Include="src\core\worker_threads.h" />
+    <ClInclude Include="src\ctrl\CFlush.h" />
     <ClInclude Include="src\ctrl\ThreadManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

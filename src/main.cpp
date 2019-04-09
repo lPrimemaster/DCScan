@@ -5,10 +5,12 @@
 #include "core/base/Timer.h"
 #include "core/base/counter.h"
 
+#include "ctrl/CFlush.h"
+
 #include "core/io/usb_serial.h"
 
 #define NAME "DCScan"
-#define VERSION "2.0-b1"
+#define VERSION "2.0-b2"
 
 //Options for later work : César
 //Opt 1 - NI-DAQmx intrinsic handshaking for communication with engines
@@ -20,10 +22,13 @@
 
 int main(int argc, char* argv[])
 {
+	//Initialize default windows handle for operation
+	CFlush::InitHandle();
+
 	//Redirect cerr to file
-	std::ofstream out(NAME "-" VERSION ".log");
+	std::ofstream filebuffer(NAME "-" VERSION ".log");
 	std::streambuf *cerrbuf = std::cerr.rdbuf();
-	std::cerr.rdbuf(out.rdbuf());
+	std::cerr.rdbuf(filebuffer.rdbuf());
 
 	//Redirect cout to modified printf
 	std::stringstream outbuffer;
@@ -63,12 +68,9 @@ int main(int argc, char* argv[])
 	auto tid_0 = manager.addThread(acquireThread, &doptions);
 	auto tid_1 = manager.addThread(processThread, f);
 
-	printf("%s", outbuffer.str().c_str());
-	outbuffer.clear();
+	CFlush::FlushConsoleStream(&outbuffer);
 
 	std::this_thread::sleep_for(std::chrono::seconds(5));
-
-	ScrollByRelativeCoord(7);
 
 	manager.joinThreadSync(tid_0);
 	manager.joinThreadSync(tid_1);
@@ -97,8 +99,8 @@ int main(int argc, char* argv[])
 
 	std::cout << "Program uptime: " << Timer::apiUptimeString() << std::endl;
 
-	printf("%s", outbuffer.str().c_str());
-	outbuffer.clear();
+	CFlush::ClearConsole(0, CFlush::rows - THREAD_CONCURRENCY);
+	CFlush::FlushConsoleStream(&outbuffer);
 
 	auto val = 'r';
 
@@ -106,6 +108,9 @@ int main(int argc, char* argv[])
 	{
 		val = getchar();
 	}
+
+	//Close the handle only when all user threads stopped
+	CFlush::CloseHandle();
 
 	return 0;
 }

@@ -3,6 +3,10 @@
 #include <time.h>
 #include <stdarg.h>
 #include <sstream>
+#include <thread>
+#include <vector>
+#include <algorithm>
+#include <mutex>
 #ifdef _WIN32
 #include <Windows.h>
 #endif // _WIN32
@@ -130,11 +134,4 @@ int ScrollByRelativeCoord(int iRows)
 		printf("\nCannot scroll; the window is too close to the top.\n");
 		return 0;
 	}
-}
-
-void wc_flush(std::stringstream * ss)
-{
-	const char* buffer = ss->str().c_str();
-
-	ss->clear();
 }

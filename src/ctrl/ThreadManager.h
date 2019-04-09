@@ -14,7 +14,7 @@
 
 const unsigned int THREAD_CONCURRENCY = std::thread::hardware_concurrency();
 
-//Threads can only be created from the main thread! This is not thread-safe!
+//Threads should only be created from the main (or a single) thread! This class is not thread-safe!
 class ThreadManager
 {
 public:

@@ -48,6 +48,9 @@
     <ClCompile Include="src\core\io\usb_serial.c">
       <Filter>Source Files\C</Filter>
     </ClCompile>
+    <ClCompile Include="src\ctrl\CFlush.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ctrl\ThreadManager.h">
@@ -76,6 +79,9 @@
     </ClInclude>
     <ClInclude Include="src\core\io\usb_serial.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ctrl\CFlush.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

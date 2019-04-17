@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
 
 	CFlush::FlushConsoleStream(&outbuffer);
 
-	std::this_thread::sleep_for(std::chrono::seconds(5));
+	std::this_thread::sleep_for(std::chrono::seconds(1));
 
 	manager.joinThreadSync(tid_0);
 	manager.joinThreadSync(tid_1);
@@ -101,13 +101,6 @@ int main(int argc, char* argv[])
 
 	CFlush::ClearConsole(0, CFlush::rows - THREAD_CONCURRENCY);
 	CFlush::FlushConsoleStream(&outbuffer);
-
-	auto val = 'r';
-
-	while ( val != 's')
-	{
-		val = getchar();
-	}
 
 	//Close the handle only when all user threads stopped
 	CFlush::CloseHandle();

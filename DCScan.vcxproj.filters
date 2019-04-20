@@ -51,8 +51,8 @@
     <ClCompile Include="src\ctrl\CFlush.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\core\io\transfer\ProtocolPacket.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\core\io\register.c">
+      <Filter>Source Files\C</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -71,9 +71,6 @@
     <ClInclude Include="src\core\worker_callbacks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\core\api\include\DCScan.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\core\base\Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -86,8 +83,11 @@
     <ClInclude Include="src\core\io\usb_serial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\core\io\transfer\ProtocolPacket.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="src\core\api\include\DCScan.h">
+      <Filter>Source Files\C</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\io\register.h">
+      <Filter>Source Files\C</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

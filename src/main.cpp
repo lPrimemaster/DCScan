@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 	std::streambuf *cerrbuf = std::cerr.rdbuf();
 	std::cerr.rdbuf(filebuffer.rdbuf());
 
-	//Redirect cout to modified printf
+	//Redirect cout to modified printf - FIXME
 	std::stringstream outbuffer;
 	std::streambuf *outbuf = std::cout.rdbuf();
 	std::cout.rdbuf(outbuffer.rdbuf());
@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
 	Timestamp ts = Timer::apiTimeSystemHRC();
 
 	std::cout << "Program started... " << std::endl << "Current time - " << ts.year << "/" << ts.month << "/" << ts.day << " " << ts.hour << ":" << ts.min << ":" << ts.sec << ":" << ts.millis << ":" << ts.micros << ":" << ts.nanos << std::endl;
-	std::cout << "Control thread [0x" << std::hex << std::this_thread::get_id() << "] started." << std::endl;
+	std::cout << "Main thread [0x" << std::hex << std::this_thread::get_id() << "] started." << std::endl;
 
 	AcquireDataOptions doptions;
 	TaskProperties properties;
@@ -65,15 +65,22 @@ int main(int argc, char* argv[])
 	fopen_s(&f, "data_out.csv", "w");
 	fprintf(f, "Packet,Point,Data,Timestamp [Software],Timestamp [Hardware][us],Packet Delta [ms - us]\n");
 
+	//The following nomenclature is to be followed
+	//Convert all datatype pointers to intptr_t and then pass them to the required function or thread, unwrapping it latter
+
+	intptr_t int_ptr[2] = {reinterpret_cast<intptr_t>(f), reinterpret_cast<intptr_t>(&doptions)};
+
 	auto tid_0 = manager.addThread(acquireThread, &doptions);
-	auto tid_1 = manager.addThread(processThread, f);
+	auto tid_1 = manager.addThread(processThread, int_ptr);
+	auto tid_2 = manager.addThread(controlThread, NULL);
 
 	CFlush::FlushConsoleStream(&outbuffer);
 
-	std::this_thread::sleep_for(std::chrono::seconds(1));
+	std::this_thread::sleep_for(std::chrono::milliseconds(120000));
 
 	manager.joinThreadSync(tid_0);
 	manager.joinThreadSync(tid_1);
+	manager.joinThreadSync(tid_2);
 
 	fclose(f);
 

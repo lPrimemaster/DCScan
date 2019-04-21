@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
 	std::cout << "Program started... " << std::endl << "Current time - " << ts.year << "/" << ts.month << "/" << ts.day << " " << ts.hour << ":" << ts.min << ":" << ts.sec << ":" << ts.millis << ":" << ts.micros << ":" << ts.nanos << std::endl;
 	std::cout << "Main thread [0x" << std::hex << std::this_thread::get_id() << "] started." << std::endl;
 
-	IniFileData data = readIniFile("config\\dcscan.ini");
+	IO::IniFileData data = IO::readIniFile("config\\dcscan.ini");
 
 	AcquireDataOptions doptions;
 	TaskProperties properties;
@@ -113,10 +113,8 @@ int main(int argc, char* argv[])
 	CFlush::ClearConsole(0, CFlush::rows - THREAD_CONCURRENCY);
 	CFlush::FlushConsoleStream(&outbuffer);
 
-	
-
-
-	createIniFile("config\\dcscan.ini");
+	//Always revert the .ini file to default for safety purposes and test only
+	IO::createIniFile("config\\dcscan.ini");
 
 	CFlush::FlushConsoleStream(&outbuffer);
 

@@ -86,6 +86,9 @@
       <AdditionalDependencies>NIDAQmx.lib;libusb-1.0.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
+    <PostBuildEvent>
+      <Command>call $(SolutionDir)DCScan\config\build_revision.bat 2 0 $(ConfigurationName)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -136,6 +139,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\core\api\DCScan.c" />
+    <ClCompile Include="src\core\api\execution.cpp" />
     <ClCompile Include="src\core\base\common.cpp" />
     <ClCompile Include="src\core\base\counter.cpp" />
     <ClCompile Include="src\core\base\Timer.cpp" />
@@ -147,8 +151,10 @@
     <ClCompile Include="src\ctrl\CFlush.cpp" />
     <ClCompile Include="src\ctrl\ThreadManager.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\version.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\core\api\execution.h" />
     <ClInclude Include="src\core\api\include\DCScan.h" />
     <ClInclude Include="src\core\base\common.h" />
     <ClInclude Include="src\core\base\counter.h" />
@@ -160,6 +166,7 @@
     <ClInclude Include="src\core\worker_threads.h" />
     <ClInclude Include="src\ctrl\CFlush.h" />
     <ClInclude Include="src\ctrl\ThreadManager.h" />
+    <ClInclude Include="src\version.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

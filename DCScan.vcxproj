@@ -79,6 +79,7 @@
       <AdditionalIncludeDirectories>deps\DAQmx ANSI C Dev\include;H:\Data\C++\DCScan\DCScan\deps\libusb-1.0.22\include;H:\Data\C++\DCScan\DCScan\deps\libcurl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_API_EXPORTING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>deps\DAQmx ANSI C Dev\lib\msvc;H:\Data\C++\DCScan\DCScan\deps\libusb-1.0.22\MS32\static;H:\Data\C++\DCScan\DCScan\deps\libcurl;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -138,7 +139,7 @@
     <ClCompile Include="src\core\base\common.cpp" />
     <ClCompile Include="src\core\base\counter.cpp" />
     <ClCompile Include="src\core\base\Timer.cpp" />
-    <ClCompile Include="src\core\io\register.c" />
+    <ClCompile Include="src\core\io\register.cpp" />
     <ClCompile Include="src\core\io\usb_serial.c" />
     <ClCompile Include="src\core\Task.cpp" />
     <ClCompile Include="src\core\worker_callbacks.cpp" />

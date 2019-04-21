@@ -51,8 +51,8 @@
     <ClCompile Include="src\ctrl\CFlush.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\core\io\register.c">
-      <Filter>Source Files\C</Filter>
+    <ClCompile Include="src\core\io\register.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -87,7 +87,7 @@
       <Filter>Source Files\C</Filter>
     </ClInclude>
     <ClInclude Include="src\core\io\register.h">
-      <Filter>Source Files\C</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

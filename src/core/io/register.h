@@ -1,44 +1,25 @@
 #pragma once
-#include <stdio.h>
+#include <vector>
+#include <map>
+#include <iostream>
 #ifdef _WIN32
 #include <Windows.h>
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-	typedef struct _IniFileData
+typedef std::map<const char*, std::map<const char*, std::string>> IniFileData;
+
+struct IniFileProperties
+{
+	std::vector<const char*> section = { "VERSION", "IOLOC", "UPDATESRV", "ACQSETTINGS", "CTRLSETTINGS" };
+	std::map<const char*, std::vector<const char*>> sub_sec =
 	{
-		const unsigned version_major;
-		const unsigned version_minor;
+		{ "VERSION",		{ "MAJOR", "MINOR" } },											//VERSION
+		{ "IOLOC",			{ "NAME", "RELATIVE_PATH", "ABSOLUTE_PATH", "EXTENSION" } },	//IOLOC
+		{ "UPDATESRV",		{ "PROTOCOL", "URL" } },										//UPDATESERV
+		{ "ACQSETTINGS",	{ "DEFAULT_TIMER" } },											//ACQSETTINGSS
+		{ "CTRLSETTINGS",	{ "DEFAULT_DELTA" } }											//CTRLSETTINGS
+	};
+};
 
-		const char* ioloc_name;
-		const char* ioloc_path;
-		const char* ioloc_exts = fullData[1][2];
-
-		const char* updt_prt;
-		const char* updt_url;
-	}IniFileData;
-
-	typedef struct _IniFileProperties 
-	{
-
-		const char* section[5];
-
-		const char* sub_sec[5][3];
-
-		//ordered in sub_sec
-		//const char* version[2];
-		//const char* iolocat[3];
-		//const char* updtsrv[2];
-		//const char* acqsett[2];
-		//const char* ctrsett[2];
-
-	}IniFileProperties;
-
-	void createIniFile(LPCTSTR name);
-	void readIniFile(LPCTSTR name);
-
-#ifdef __cplusplus
-}
-#endif
+void createIniFile(LPCTSTR name);
+IniFileData readIniFile(LPCTSTR name);

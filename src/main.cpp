@@ -8,9 +8,10 @@
 #include "ctrl/CFlush.h"
 
 #include "core/io/usb_serial.h"
+#include "core/io/register.h"
 
 #define NAME "DCScan"
-#define VERSION "2.0-b2"
+#define VERSION "2.0-b3"
 
 //Options for later work : César
 //Opt 1 - NI-DAQmx intrinsic handshaking for communication with engines
@@ -19,6 +20,7 @@
 //TODOS : César
 //Motors communication / control implementation
 //Api implementation for use in external GUI (for : Tiago ?)
+//Fix an error with thread concurrency at ThreadManager.cpp : 67 -> pool erased
 
 int main(int argc, char* argv[])
 {
@@ -42,6 +44,8 @@ int main(int argc, char* argv[])
 	std::cout << "Program started... " << std::endl << "Current time - " << ts.year << "/" << ts.month << "/" << ts.day << " " << ts.hour << ":" << ts.min << ":" << ts.sec << ":" << ts.millis << ":" << ts.micros << ":" << ts.nanos << std::endl;
 	std::cout << "Main thread [0x" << std::hex << std::this_thread::get_id() << "] started." << std::endl;
 
+	IniFileData data = readIniFile("config\\dcscan.ini");
+
 	AcquireDataOptions doptions;
 	TaskProperties properties;
 
@@ -55,14 +59,14 @@ int main(int argc, char* argv[])
 
 	properties.timer.activeEdge = DAQmx_Val_Rising;
 	properties.timer.sampleMode = DAQmx_Val_ContSamps;
-	properties.timer.sampleRate = 10000.0;
+	properties.timer.sampleRate = atof(data["ACQSETTINGS"]["DEFAULT_TIMER"].c_str());
 	properties.timer.samplesPerChannel = 1000;
 	properties.timer.source = "";
 
 	doptions.tproperties = properties;
 
 	FILE* f;
-	fopen_s(&f, "data_out.csv", "w");
+	fopen_s(&f, std::string(data["IOLOC"]["RELATIVE_PATH"] + "/" + data["IOLOC"]["NAME"] + "." + data["IOLOC"]["EXTENSION"]).c_str(), "w");
 	fprintf(f, "Packet,Point,Data,Timestamp [Software],Timestamp [Hardware][us],Packet Delta [ms - us]\n");
 
 	//The following nomenclature is to be followed
@@ -72,15 +76,15 @@ int main(int argc, char* argv[])
 
 	auto tid_0 = manager.addThread(acquireThread, &doptions);
 	auto tid_1 = manager.addThread(processThread, int_ptr);
-	auto tid_2 = manager.addThread(controlThread, NULL);
+	//auto tid_2 = manager.addThread(controlThread, NULL);
 
 	CFlush::FlushConsoleStream(&outbuffer);
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(120000));
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
 	manager.joinThreadSync(tid_0);
 	manager.joinThreadSync(tid_1);
-	manager.joinThreadSync(tid_2);
+	//manager.joinThreadSync(tid_2);
 
 	fclose(f);
 
@@ -107,6 +111,13 @@ int main(int argc, char* argv[])
 	std::cout << "Program uptime: " << Timer::apiUptimeString() << std::endl;
 
 	CFlush::ClearConsole(0, CFlush::rows - THREAD_CONCURRENCY);
+	CFlush::FlushConsoleStream(&outbuffer);
+
+	
+
+
+	createIniFile("config\\dcscan.ini");
+
 	CFlush::FlushConsoleStream(&outbuffer);
 
 	//Close the handle only when all user threads stopped

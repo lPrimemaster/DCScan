@@ -51,6 +51,9 @@
     <ClCompile Include="src\ctrl\CFlush.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\io\register.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ctrl\ThreadManager.h">
@@ -68,19 +71,22 @@
     <ClInclude Include="src\core\worker_callbacks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\core\api\include\DCScan.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\core\base\Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\core\base\counter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\core\io\usb_serial.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\ctrl\CFlush.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\io\usb_serial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\api\include\DCScan.h">
+      <Filter>Source Files\C</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\io\register.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

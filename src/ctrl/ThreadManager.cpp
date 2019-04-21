@@ -64,7 +64,7 @@ ThreadManager::ThreadManager()
 					{
 						bool end = it == pool_pos.end();
 
-						if (it->second == i)
+						if (!pool_pos.empty() && it->second == i) //Fix thread concurrency here - Prime @Todo
 						{
 							std::stringstream ss;
 							ss << "0x" << std::hex << it->first;

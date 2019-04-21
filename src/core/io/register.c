@@ -43,16 +43,7 @@ void readIniFile(LPCTSTR name)
 	}
 
 	//Parse the read data - ordered - FIXME
-	IniFileData ini_out =
-	{
-		.version_major = atoi(fullData[0][0]),
-		.version_minor = atoi(fullData[0][1]),
+	IniFileData ini_out;
 
-		.ioloc_name = fullData[1][0],
-		.ioloc_path = fullData[1][1],
-		.ioloc_exts = fullData[1][2],
-
-		.updt_prt = fullData[2][0],
-		.updt_url = fullData[2][1]
-	};
+	strcpy(ini_out.);
 }

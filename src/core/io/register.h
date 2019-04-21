@@ -26,4 +26,5 @@ namespace IO
 
 	void createIniFile(LPCTSTR name);
 	IniFileData readIniFile(LPCTSTR name);
+	IniFileData readCfgFile(LPCTSTR name);
 }

@@ -1,4 +1,5 @@
 #include "register.h"
+#include "../../version.h"
 namespace IO
 {
 	void createIniFile(LPCTSTR name)
@@ -7,8 +8,8 @@ namespace IO
 		char fpath[64];
 		GetFullPathName(name, 64, path, NULL);
 
-		WritePrivateProfileString("VERSION", "MAJOR", "2", path);
-		WritePrivateProfileString("VERSION", "MINOR", "0", path);
+		WritePrivateProfileString("VERSION", "MAJOR", GET_VERSION_MAJOR().c_str(), path);
+		WritePrivateProfileString("VERSION", "MINOR", GET_VERSION_MINOR().c_str(), path);
 
 		WritePrivateProfileString("IOLOC", "NAME", "data_out", path);
 		WritePrivateProfileString("IOLOC", "RELATIVE_PATH", "data", path);
@@ -50,6 +51,31 @@ namespace IO
 		//Update server protocol + url
 
 		//Acquisition settings
+
+		return data;
+	}
+	IniFileData readCfgFile(LPCTSTR name)
+	{
+		char path[64];
+		GetFullPathName(name, 64, path, NULL);
+		IniFileProperties properties;
+
+		//64 bytes max string on cfg file
+		IniFileData data;
+
+		char buffer[64];
+		DWORD error;
+
+		error = GetPrivateProfileString("Version", "Major", "N/A", buffer, 64, path);
+		data["Version"]["Major"] = buffer;
+		error = GetPrivateProfileString("Version", "Minor", "N/A", buffer, 64, path);
+		data["Version"]["Minor"] = buffer;
+
+		error = GetPrivateProfileString("Version", "Type", "N/A", buffer, 64, path);
+		data["Version"]["Type"] = buffer;
+
+		error = GetPrivateProfileString("Version", "Build", "N/A", buffer, 64, path);
+		data["Version"]["Build"] = buffer;
 
 		return data;
 	}

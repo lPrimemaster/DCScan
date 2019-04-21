@@ -29,6 +29,11 @@ void processThread(std::atomic<int>* flags, void * data)
 {
 	std::cout << "Processing thread [0x" << std::hex << std::this_thread::get_id() << "] started." << std::endl;
 
+	intptr_t* int_ptr = reinterpret_cast<intptr_t*>(data);
+
+	FILE* f = reinterpret_cast<FILE*>(int_ptr[0]);
+	AcquireDataOptions* opt = reinterpret_cast<AcquireDataOptions*>(int_ptr[1]);
+
 	while (true)
 	{
 		while (CallbackPacket::getGlobalCBPStack()->empty() && flags->load() == THREAD_RUN)
@@ -49,9 +54,8 @@ void processThread(std::atomic<int>* flags, void * data)
 		CallbackPacket::getGlobalCBPMutex()->unlock();
 
 		//Process the data
-		static long long dt = 1000000000 / 10000; //In nanoseconds
+		static long long dt = 1000000000 / opt->tproperties.timer.sampleRate; //In nanoseconds
 		static int dpser = 0;
-		FILE* f = reinterpret_cast<FILE*>(data);
 
 		long long ns = dpacket.software_tor_ns;
 
@@ -77,4 +81,9 @@ void processThread(std::atomic<int>* flags, void * data)
 		//Free data copy
 		free(dpacket.data);
 	}
+}
+
+void controlThread(std::atomic<int>* flags, void* data)
+{
+	std::cout << "Control thread [0x" << std::hex << std::this_thread::get_id() << "] started." << std::endl;
 }

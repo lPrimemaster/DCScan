@@ -8,21 +8,27 @@ namespace IO
 		char fpath[64];
 		GetFullPathName(name, 64, path, NULL);
 
-		WritePrivateProfileString("VERSION", "MAJOR", GET_VERSION_MAJOR().c_str(), path);
-		WritePrivateProfileString("VERSION", "MINOR", GET_VERSION_MINOR().c_str(), path);
+		WritePrivateProfileString("Version", "major", GET_VERSION_MAJOR().c_str(), path);
+		WritePrivateProfileString("Version", "minor", GET_VERSION_MINOR().c_str(), path);
 
-		WritePrivateProfileString("IOLOC", "NAME", "data_out", path);
-		WritePrivateProfileString("IOLOC", "RELATIVE_PATH", "data", path);
+		WritePrivateProfileString("IOLocation", "name", "data_out", path);
+		WritePrivateProfileString("IOLocation", "relative_path", "data", path);
 		GetFullPathName("data", 64, fpath, NULL);
-		WritePrivateProfileString("IOLOC", "ABSOLUTE_PATH", fpath, path);
-		WritePrivateProfileString("IOLOC", "EXTENSION", "CSV", path);
+		WritePrivateProfileString("IOLocation", "absolute_path", fpath, path);
+		WritePrivateProfileString("IOLocation", "extension", "csv", path);
 
-		WritePrivateProfileString("UPDATESRV", "PROTOCOL", "HTTP", path);
-		WritePrivateProfileString("UPDATESRV", "URL", "http://example.com", path);
+		WritePrivateProfileString("UpdateServer", "protocol", "http", path);
+		WritePrivateProfileString("UpdateServer", "url", "http://example.com", path);
 
-		WritePrivateProfileString("ACQSETTINGS", "DEFAULT_TIMER", "10000.0", path);
+		WritePrivateProfileString("AcquireSettings", "default_timer", "10000.0", path);
+		WritePrivateProfileString("AcquireSettings", "default_channel", "dev1/ai0", path);
+		WritePrivateProfileString("AcquireSettings", "default_assigned", "", path);
+		WritePrivateProfileString("AcquireSettings", "default_units", "10348", path);
+		WritePrivateProfileString("AcquireSettings", "default_min", "-10.0", path);
+		WritePrivateProfileString("AcquireSettings", "default_max", "10.0", path);
+		WritePrivateProfileString("AcquireSettings", "default_spc", "1000", path);
 
-		WritePrivateProfileString("CTRLSETTINGS", "DEFAULT_DELTA", "0.001", path);
+		WritePrivateProfileString("ControlSettings", "default_delta", "0.001", path);
 	}
 
 	IniFileData readIniFile(LPCTSTR name)
@@ -39,7 +45,7 @@ namespace IO
 			for (auto sub_sec : properties.sub_sec[section])
 			{
 				char buffer[64];
-				DWORD error = GetPrivateProfileString(section, sub_sec, "N/A", buffer, 64, path);
+				DWORD error = GetPrivateProfileString(section, sub_sec, "Unknown", buffer, 64, path);
 				data[section][sub_sec] = buffer;
 			}
 		}
@@ -54,6 +60,7 @@ namespace IO
 
 		return data;
 	}
+
 	IniFileData readCfgFile(LPCTSTR name)
 	{
 		char path[64];
@@ -66,15 +73,15 @@ namespace IO
 		char buffer[64];
 		DWORD error;
 
-		error = GetPrivateProfileString("Version", "Major", "N/A", buffer, 64, path);
+		error = GetPrivateProfileString("Version", "Major", "Unknown", buffer, 64, path);
 		data["Version"]["Major"] = buffer;
-		error = GetPrivateProfileString("Version", "Minor", "N/A", buffer, 64, path);
+		error = GetPrivateProfileString("Version", "Minor", "Unknown", buffer, 64, path);
 		data["Version"]["Minor"] = buffer;
 
-		error = GetPrivateProfileString("Version", "Type", "N/A", buffer, 64, path);
+		error = GetPrivateProfileString("Version", "Type", "Unknown", buffer, 64, path);
 		data["Version"]["Type"] = buffer;
 
-		error = GetPrivateProfileString("Version", "Build", "N/A", buffer, 64, path);
+		error = GetPrivateProfileString("Version", "Build", "Unknown", buffer, 64, path);
 		data["Version"]["Build"] = buffer;
 
 		return data;

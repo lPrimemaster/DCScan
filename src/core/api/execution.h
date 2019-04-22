@@ -4,9 +4,9 @@
 extern "C" {
 #endif
 
-	typedef struct _dcs_acquisition DCScan_Acquisition;
+	typedef struct _dcs_acquisition DCScan_Context;
 
-	int executeDefault(DCScan_Acquisition* acquisition);
+	int executeDefault(DCScan_Context* acquisition);
 
 #ifdef __cplusplus
 }

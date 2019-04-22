@@ -20,6 +20,8 @@
 //Motors communication / control implementation
 //Api implementation for use in external GUI (for : Tiago ?)
 //Fix an error with thread concurrency at ThreadManager.cpp : 67 -> pool erased
+//Create a system where there can be more than one .ini file, for multiple configurations
+//Fix directory non existent for data or config files
 
 int main(int argc, char* argv[])
 {
@@ -42,39 +44,46 @@ int main(int argc, char* argv[])
 
 	std::cout << "Program started... " << std::endl << "Current time - " << ts.year << "/" << ts.month << "/" << ts.day << " " << ts.hour << ":" << ts.min << ":" << ts.sec << ":" << ts.millis << ":" << ts.micros << ":" << ts.nanos << std::endl;
 	std::cout << "Main thread [0x" << std::hex << std::this_thread::get_id() << "] started." << std::endl;
-
-	IO::IniFileData data = IO::readIniFile("config\\dcscan.ini");
+	IO::createIniFile("config\\default.ini");
+	IO::IniFileData data = IO::readIniFile("config\\default.ini");
 
 	AcquireDataOptions doptions;
 	TaskProperties properties;
 
 	properties.name = "task0";
-	properties.channel.name = "dev1/ai0";
-	properties.channel.assignedChannel = "";
-	properties.channel.channelUnits = DAQmx_Val_Volts;
+	properties.channel.name = data["AcquireSettings"]["default_channel"].c_str();
+	properties.channel.assignedChannel = data["AcquireSettings"]["default_assigned"].c_str();
+	properties.channel.channelUnits = atoi(data["AcquireSettings"]["default_units"].c_str());
 	properties.channel.customScaleName = "";
-	properties.channel.minValue = -10.0;
-	properties.channel.maxValue =  10.0;
+	properties.channel.minValue = atof(data["AcquireSettings"]["default_min"].c_str());
+	properties.channel.maxValue = atof(data["AcquireSettings"]["default_max"].c_str());
 
 	properties.timer.activeEdge = DAQmx_Val_Rising;
 	properties.timer.sampleMode = DAQmx_Val_ContSamps;
-	properties.timer.sampleRate = atof(data["ACQSETTINGS"]["DEFAULT_TIMER"].c_str());
-	properties.timer.samplesPerChannel = 1000;
+	properties.timer.sampleRate = atof(data["AcquireSettings"]["default_timer"].c_str());
+	properties.timer.samplesPerChannel = atoi(data["AcquireSettings"]["default_spc"].c_str());
 	properties.timer.source = "";
 
 	doptions.tproperties = properties;
 
 	FILE* f;
-	fopen_s(&f, std::string(data["IOLOC"]["RELATIVE_PATH"] + "/" + data["IOLOC"]["NAME"] + "." + data["IOLOC"]["EXTENSION"]).c_str(), "w");
+	fopen_s(&f, std::string(data["IOLocation"]["relative_path"] + "/" 
+		+ data["IOLocation"]["name"] + "." 
+		+ data["IOLocation"]["extension"]).c_str(), "w");
+	if (f == nullptr)
+	{
+		std::cerr << "IO error: could not find/open the specified file: " 
+			<< std::string(data["IOLocation"]["relative_path"] + "/" 
+				+ data["IOLocation"]["name"] + "." 
+				+ data["IOLocation"]["extension"]) << std::endl;
+		return -1;
+	}
 	fprintf(f, "Packet,Point,Data,Timestamp [Software],Timestamp [Hardware][us],Packet Delta [ms - us]\n");
 
 	//The following nomenclature is to be followed
 	//Convert all datatype pointers to intptr_t and then pass them to the required function or thread, unwrapping it latter
-
-	intptr_t int_ptr[2] = {reinterpret_cast<intptr_t>(f), reinterpret_cast<intptr_t>(&doptions)};
-
 	auto tid_0 = manager.addThread(acquireThread, &doptions);
-	auto tid_1 = manager.addThread(processThread, int_ptr);
+	auto tid_1 = manager.addThread(processThread, convertToIntPointer(f, &doptions));
 	//auto tid_2 = manager.addThread(controlThread, NULL);
 
 	CFlush::FlushConsoleStream(&outbuffer);
@@ -113,7 +122,7 @@ int main(int argc, char* argv[])
 	CFlush::FlushConsoleStream(&outbuffer);
 
 	//Always revert the .ini file to default for safety purposes and test only
-	IO::createIniFile("config\\dcscan.ini");
+	IO::createIniFile("config\\default.ini");
 
 	CFlush::FlushConsoleStream(&outbuffer);
 

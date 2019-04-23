@@ -193,7 +193,7 @@ int test()
 	else
 		printf("\n\n   Setting Serial Port Timeouts Successfull");*/
 
-	char   lpBuffer[] = "1TP?\r";// lpBuffer should be  char or byte array, otherwise write wil fail
+	char   lpBuffer[] = "1VA15;1PA0;1WS1;1TP?\r";// lpBuffer should be  char or byte array, otherwise write wil fail
 	DWORD  dNoOFBytestoWrite;               // No of bytes to write into the port
 	DWORD  dNoOfBytesWritten = 0;           // No of bytes written to the port
 

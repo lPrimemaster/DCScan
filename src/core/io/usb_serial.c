@@ -24,6 +24,7 @@ HANDLE serial_initHandle(LPCSTR portName, DWORD rwAccess, SerialArgs args)
 	if (hComm == INVALID_HANDLE_VALUE)
 	{
 		fprintf(stderr, "Serial: Port %s error. Not opened.\n", portName);
+		fprintf(stderr, "Serial: Extended error: %u\n", GetLastError());
 		return INVALID_HANDLE_VALUE;
 	}
 	else
@@ -112,7 +113,7 @@ BOOL serial_writeBytes(HANDLE hComm, LPCSTR charArray, DWORD NbytesToWrite)
 		fprintf(stderr, "Serial: Tx of data failed: .\n");
 		fprintf(stderr, "		Serial port = %u\n", (uintptr_t)hComm);
 		fprintf(stderr, "		Serial data = %s\n", charArray);
-		fprintf(stderr, "		Error       = %ul\n", GetLastError());
+		fprintf(stderr, "		Error       = %u\n", GetLastError());
 		return FALSE;
 	}
 
@@ -120,7 +121,7 @@ BOOL serial_writeBytes(HANDLE hComm, LPCSTR charArray, DWORD NbytesToWrite)
 
 }
 
-BOOL serial_readBytes(HANDLE hComm, LPTSTR buffer, DWORD bufferSize, LPDWORD readBufferSize)
+BOOL serial_readBytes(HANDLE hComm, LPTSTR * buffer, DWORD bufferSize, LPDWORD readBufferSize)
 {
 	//Check if the handle is in fact valid
 	if (hComm == INVALID_HANDLE_VALUE)
@@ -138,7 +139,7 @@ BOOL serial_readBytes(HANDLE hComm, LPTSTR buffer, DWORD bufferSize, LPDWORD rea
 	if (status == FALSE)
 	{
 		fprintf(stderr, "Serial: SetCommMask() error. Event %d might be invalid.\n", EV_RXCHAR);
-		fprintf(stderr, "Serial: Extended error: %ul\n", GetLastError());
+		fprintf(stderr, "Serial: Extended error: %u\n", GetLastError());
 		return FALSE;
 	}
 
@@ -148,7 +149,7 @@ BOOL serial_readBytes(HANDLE hComm, LPTSTR buffer, DWORD bufferSize, LPDWORD rea
 	if (status == FALSE)
 	{
 		fprintf(stderr, "Serial: WaitCommEvent() error.\n");
-		fprintf(stderr, "Serial: Extended error: %ul\n", GetLastError());
+		fprintf(stderr, "Serial: Extended error: %u\n", GetLastError());
 		return FALSE;
 	}
 
@@ -191,7 +192,7 @@ BOOL serial_readBytes(HANDLE hComm, LPTSTR buffer, DWORD bufferSize, LPDWORD rea
 	if (status == FALSE)
 	{
 		fprintf(stderr, "Serial: Rx of data failed.\n");
-		fprintf(stderr, "Serial: Extended error: %ul\n", GetLastError());
+		fprintf(stderr, "Serial: Extended error: %u\n", GetLastError());
 		fprintf(stderr, "		Read Buffer Size = %d\n", SERIAL_DEFAULT_READ_BUFFER_SIZE);
 		fprintf(stderr, "		Received Size    = %d\n", excess + i);
 		fprintf(stderr, "		Ignoring Size    = %d\n", excess);
@@ -208,7 +209,7 @@ BOOL serial_readBytes(HANDLE hComm, LPTSTR buffer, DWORD bufferSize, LPDWORD rea
 
 	if (bufferSize >= localBufferSize)
 	{
-		strcpy_s(buffer, localBufferSize, localSerialBuffer);
+		strcpy_s(*buffer, localBufferSize, localSerialBuffer);
 		*readBufferSize = localBufferSize;
 	}
 	else

@@ -12,6 +12,8 @@
 
 #include "version.h"
 
+#include "core/io/SerialCom.h"
+
 //Options for later work : César
 //Opt 1 - NI-DAQmx intrinsic handshaking for communication with engines
 //Opt 2 - Software timing / event for communication with engines
@@ -95,12 +97,28 @@ int main(int argc, char* argv[])
 
 	fclose(f);
 
-	HANDLE coms = serial_initHandle("COM1", GENERIC_READ | GENERIC_WRITE, { 0 });
-	serial_writeBytes(coms, "1PA12.34;1WS;1TP?\r", 19);
+	//SerialCom serial("COM6");
+
+	//auto where_to = serial.moveAbsoluteAsync(1, 20.0000);
+	//where_to.wait();
+
+	SerialArgs args;
+	args.baudRate = 9600;		//921.6 kBd
+	args.byteSize = 8;			//8 bit size
+	args.eofChar = 3;		//Carriage return command eof
+	args.parity = NOPARITY;		//No parity
+	args.stopBits = ONESTOPBIT;	//One stop bit
+
+	HANDLE serial = serial_initHandle("COM6", GENERIC_READ | GENERIC_WRITE, args);
+
 	char buffer[256];
-	DWORD size = 0;
-	//serial_readBytes(coms, buffer, 256, &size);
-	serial_closeHandle(coms);
+	DWORD abs = 0;
+
+	serial_readBytes(serial, (char**)&buffer, 256, &abs);
+
+	printf("Received: '%s' from arduino!\n", buffer);
+
+	serial_closeHandle(serial);
 
 	std::cout << "Program uptime: " << Timer::apiUptimeString() << std::endl;
 

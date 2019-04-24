@@ -27,15 +27,14 @@ int main(int argc, char* argv[])
 	//Initialize default windows handle for operation
 	CFlush::InitHandle();
 
-	//Redirect cerr to file
-	/*std::ofstream filebuffer("logs/" + GET_VERSION_STR() + ".log");
-	std::streambuf *cerrbuf = std::cerr.rdbuf();
-	std::cerr.rdbuf(filebuffer.rdbuf());*/
+	//Redirect cerr and stderr to file
+	FILE* nstderr = NULL;
+	freopen_s(&nstderr, std::string("logs/" + GET_VERSION_STR() + ".log").c_str(), "w", stderr);
 
-	//Redirect cout to modified printf - FIXME
-	/*std::stringstream outbuffer;
+	//Redirect cout to modified print - FIXME
+	std::stringstream outbuffer;
 	std::streambuf *outbuf = std::cout.rdbuf();
-	std::cout.rdbuf(outbuffer.rdbuf());*/
+	std::cout.rdbuf(outbuffer.rdbuf());
 
 	ThreadManager manager;
 
@@ -86,7 +85,7 @@ int main(int argc, char* argv[])
 	auto tid_1 = manager.addThread(processThread, convertToIntPointer(f, &doptions));
 	//auto tid_2 = manager.addThread(controlThread, NULL);
 
-	//CFlush::FlushConsoleStream(&outbuffer);
+	CFlush::FlushConsoleStream(&outbuffer);
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
@@ -96,18 +95,27 @@ int main(int argc, char* argv[])
 
 	fclose(f);
 
+	HANDLE coms = serial_initHandle("COM1", GENERIC_READ | GENERIC_WRITE, { 0 });
+	serial_writeBytes(coms, "1PA12.34;1WS;1TP?\r", 19);
+	char buffer[256];
+	DWORD size = 0;
+	//serial_readBytes(coms, buffer, 256, &size);
+	serial_closeHandle(coms);
+
 	std::cout << "Program uptime: " << Timer::apiUptimeString() << std::endl;
 
-	//CFlush::ClearConsole(0, CFlush::rows - THREAD_CONCURRENCY);
-	//CFlush::FlushConsoleStream(&outbuffer);
+	CFlush::ClearConsole(0, CFlush::rows - THREAD_CONCURRENCY);
+	CFlush::FlushConsoleStream(&outbuffer);
 
 	//Always revert the .ini file to default for safety purposes and test only
 	IO::createIniFile("config\\default.ini");
 
-	//CFlush::FlushConsoleStream(&outbuffer);
+	CFlush::FlushConsoleStream(&outbuffer);
 
 	//Close the handle only when all user threads stopped
-	//CFlush::CloseHandle();
+	CFlush::CloseHandle();
+
+	fclose(nstderr);
 
 	return 0;
 }

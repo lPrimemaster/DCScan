@@ -63,7 +63,6 @@ void CFlush::FlushConsoleStream(std::stringstream * ss)
 
 	std::lock_guard<std::mutex> lock(gm);
 
-#ifdef _WIN32
 	SetConsoleActiveScreenBuffer(hConsole_c);
 
 	for (int i = 0; i < split.size(); i++)
@@ -74,9 +73,6 @@ void CFlush::FlushConsoleStream(std::stringstream * ss)
 		DWORD dwBytesWritten = 0;
 		WriteConsoleOutputCharacter(hConsole_c, buffer, len, pos, &dwBytesWritten);
 	}
-#else
-	//Linux code ???
-#endif
 	ss->clear();
 }
 
@@ -86,7 +82,6 @@ void CFlush::FlushConsoleString(std::string & str)
 
 	std::lock_guard<std::mutex> lock(gm);
 
-#ifdef _WIN32
 	SetConsoleActiveScreenBuffer(hConsole_c);
 
 	for (int i = 0; i < split.size(); i++)
@@ -97,9 +92,6 @@ void CFlush::FlushConsoleString(std::string & str)
 		DWORD dwBytesWritten = 0;
 		WriteConsoleOutputCharacter(hConsole_c, buffer, len, pos, &dwBytesWritten);
 	}
-#else
-	//Linux code ???
-#endif
 }
 
 void CFlush::FlushConsoleCharLP(const char * buffer)
@@ -109,7 +101,6 @@ void CFlush::FlushConsoleCharLP(const char * buffer)
 
 	std::lock_guard<std::mutex> lock(gm);
 
-#ifdef _WIN32
 	SetConsoleActiveScreenBuffer(hConsole_c);
 
 	//Assuming the console size can be changed
@@ -126,16 +117,12 @@ void CFlush::FlushConsoleCharLP(const char * buffer)
 		DWORD dwBytesWritten = 0;
 		WriteConsoleOutputCharacter(hConsole_c, buffer, len, pos, &dwBytesWritten);
 	}
-#else
-	//Linux code ???
-#endif
 }
 
 void CFlush::ClearConsole(SHORT y, SHORT w)
 {
 	std::lock_guard<std::mutex> lock(gm);
 
-#ifdef _WIN32
 	//Assuming the console size can be changed
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 	GetConsoleScreenBufferInfo(hConsole_c, &csbi);
@@ -143,5 +130,4 @@ void CFlush::ClearConsole(SHORT y, SHORT w)
 	DWORD dwBytesWrittenSC = 0;
 	FillConsoleOutputCharacter(hConsole_c, (TCHAR) ' ', csbi.dwSize.X * w,
 		COORD{ 0, y }, &dwBytesWrittenSC);
-#endif
 }

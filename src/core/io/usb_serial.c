@@ -1,228 +1,229 @@
 #include "usb_serial.h"
 #include <stdio.h>
-#include <string.h>
-#include <varargs.h>
 
-//#define USE_USBDK
+#define SERIAL_DEFAULT_BAUD 921600
+#define SERIAL_DEFAULT_BYTE 8
+#define SERIAL_DEFAULT_SBIT ONESTOPBIT
+#define SERIAL_DEFAULT_PARY NOPARITY
+#define SERIAL_DEFAULT_EOFC '\r'
 
-#if defined(_MSC_VER) && (_MSC_VER < 1900)
-#define snprintf _snprintf
-#endif
+#define SERIAL_DEFAULT_READ_INTERVAL_TIMEOUT 50
+#define SERIAL_DEFAULT_READ_TOTAL_TIMEOUT_CT 50
+#define SERIAL_DEFAULT_READ_TOTAL_MULTIPLIER 10
+#define SERIAL_DEFAULT_WRITE_TOTAL_TIMEOUT_CT 50
+#define SERIAL_DEFAULT_WRITE_TOTAL_MULTIPLIER 10
 
-void usb_serial_init_libusb(libusb_context** context, int debug)
+#define SERIAL_DEFAULT_READ_BUFFER_SIZE 256
+#define SERIAL_DEFAULT_READ_RX_EOF '\n'
+
+HANDLE serial_initHandle(LPCSTR portName, DWORD rwAccess, SerialArgs args)
 {
-	libusb_context** ctx = NULL;
-	int error = libusb_init(ctx);
-	if (error < 0)
-	{
-		fprintf_s(stderr, "Error initializing lib_usb: %#08X\n", error);
-		return;
-	}
-	else if(debug != 0) //Use debug options
-	{
-		int op_err = libusb_set_option(ctx, USB_SERIAL_LIBUSB_OPTION_LOG_LEVEL, USB_SERIAL_LIBUSB_LOG_LEVEL_DEBUG);
-		if (op_err == LIBUSB_ERROR_INVALID_PARAM || op_err == LIBUSB_ERROR_NOT_SUPPORTED)
-		{
-			fprintf_s(stderr, "libusb: Invalid option or not supported. Error: %#08X\n", op_err);
-		}
-	}
-	else //Use default options
-	{
-		int op_err = libusb_set_option(ctx, USB_SERIAL_LIBUSB_OPTION_LOG_LEVEL, USB_SERIAL_LIBUSB_LOG_LEVEL_ERROR);
-		if (op_err == LIBUSB_ERROR_INVALID_PARAM || op_err == LIBUSB_ERROR_NOT_SUPPORTED)
-		{
-			fprintf_s(stderr, "libusb: Invalid option or not supported. Error: %#08X\n", op_err);
-		}
-	}
+	//HANDLE of the COMport device [serial init]
+	HANDLE hComm = CreateFile(portName, rwAccess, 0, NULL, OPEN_EXISTING, 0, NULL);
 
-#if defined (_WIN32) && defined (USE_USBDK)//try to use usbdk under windows
-	int op_err = libusb_set_option(ctx, USB_SERIAL_LIBUSB_OPTION_USE_USBDK);
-	if (op_err == LIBUSB_ERROR_INVALID_PARAM || op_err == LIBUSB_ERROR_NOT_SUPPORTED)
+	if (hComm == INVALID_HANDLE_VALUE)
 	{
-		fprintf_s(stderr, "libusb: Invalid option or not supported. Error: %#08X\n", op_err);
-	}
-#endif
-}
-
-void usb_serial_deinit_libusb(libusb_context** context)
-{
-	libusb_exit(context);
-}
-
-void print_device(libusb_device* dev, int level)
-{
-	struct libusb_device_descriptor desc;
-	libusb_device_handle* handle = NULL;
-	char description[256];
-	char string[256];
-	int dd_ret;
-
-	dd_ret = libusb_get_device_descriptor(dev, &desc);
-	if (dd_ret < 0)
-	{
-		fprintf_s(stderr, "libusb: Failed to get device descriptor. Error: %#08X\n", dd_ret);
-	}
-	dd_ret = libusb_open(dev, &handle);
-	if (LIBUSB_SUCCESS == dd_ret) 
-	{
-		if (desc.iManufacturer) 
-		{
-			dd_ret = libusb_get_string_descriptor_ascii(handle, desc.iManufacturer, string, sizeof(string));
-			if (dd_ret > 0)
-				snprintf(description, sizeof(description), "%s - ", string);
-			else
-				snprintf(description, sizeof(description), "%04X - ", desc.idVendor);
-		}
-		else
-			snprintf(description, sizeof(description), "%04X - ", desc.idVendor);
-
-		if (desc.iProduct) 
-		{
-			dd_ret = libusb_get_string_descriptor_ascii(handle, desc.iProduct, string, sizeof(string));
-			if (dd_ret > 0)
-				snprintf(description + strlen(description), sizeof(description) - strlen(description), "%s", string);
-			else
-				snprintf(description + strlen(description), sizeof(description) - strlen(description), "%04X", desc.idProduct);
-		}
-		else
-			snprintf(description + strlen(description), sizeof(description) - strlen(description), "%04X", desc.idProduct);
-	}
-	else 
-	{
-		snprintf(description, sizeof(description), "%04X - %04X", desc.idVendor, desc.idProduct);
-	}
-
-	printf("%.*sDev (bus %d, device %d): %s\n", level * 2, "                    ", 
-		libusb_get_bus_number(dev), libusb_get_device_address(dev), description);
-}
-
-//device discovery
-void usb_serial_list_devices(libusb_context ** context)
-{
-	libusb_device ** list;
-	ssize_t cnt = libusb_get_device_list(context, &list);
-
-	if (cnt < 0)
-	{
-		fprintf_s(stderr, "libusb: Invalid device list discovery. Error: %#08X\n", cnt);
-		return;
+		fprintf(stderr, "Serial: Port %s error. Not opened.\n", portName);
+		return INVALID_HANDLE_VALUE;
 	}
 	else
 	{
-		putchar('\n');
-		printf("USB Serial Devices List\n");
-		for (int i = 0; i < cnt; i++)
-		{
-			libusb_device * device = list[i];
-			print_device(device, 0);
-		}
-		putchar('\n');
+		fprintf(stderr, "Serial: Port %s opened.", portName);
 	}
 
-	libusb_free_device_list(list, 1);
-}
+	DCB dcbSerialParams = { 0 };
+	dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
 
-void usb_serial_get_device_list(libusb_context ** context, usb_serial_device_list * list)
-{
-	ssize_t cnt = libusb_get_device_list(context, &list->list);
+	BOOL status = GetCommState(hComm, &dcbSerialParams); //Get the serial parameters
 
-	if (cnt < 0)
+	if (status == FALSE)
+		fprintf(stderr, "Serial: GetCommState() error. Using default or suplied values instead.\n");
+
+	/* Defaults - BDR: 921.6kBd - BSZ: 8bits - SBT: OneStop - PAR: NoParity - EOFC: Carriage return*/
+	dcbSerialParams.BaudRate = args.baudRate ? args.baudRate : (dcbSerialParams.BaudRate ? dcbSerialParams.BaudRate : SERIAL_DEFAULT_BAUD);
+	dcbSerialParams.ByteSize = args.byteSize ? args.byteSize : (dcbSerialParams.ByteSize ? dcbSerialParams.ByteSize : SERIAL_DEFAULT_BYTE);
+	dcbSerialParams.StopBits = args.stopBits ? args.stopBits : (dcbSerialParams.StopBits ? dcbSerialParams.StopBits : SERIAL_DEFAULT_SBIT);
+	dcbSerialParams.Parity   = args.parity   ? args.parity   : (dcbSerialParams.Parity   ? dcbSerialParams.Parity   : SERIAL_DEFAULT_PARY);
+	dcbSerialParams.EofChar  = args.eofChar  ? args.eofChar  : (dcbSerialParams.EofChar  ? dcbSerialParams.EofChar  : SERIAL_DEFAULT_EOFC);
+
+	status = SetCommState(hComm, &dcbSerialParams); //[Re]configure the port with DCB params
+
+	if (status == FALSE)
 	{
-		fprintf_s(stderr, "libusb: Invalid device list discovery. Error: %#08X\n", cnt);
-		list->count = -1;
+		fprintf(stderr, "Serial: SetCommState() error. Using default values, if applicable.\n");
+		fprintf(stderr, "Serial: Set COM DCB Structure Fail. Using intrinsic values, if applicable.\n");
+		fprintf(stderr, "		Baudrate = %d\n", dcbSerialParams.BaudRate);
+		fprintf(stderr, "		ByteSize = %d\n", dcbSerialParams.ByteSize);
+		fprintf(stderr, "		StopBits = %d\n", dcbSerialParams.StopBits);
+		fprintf(stderr, "		Parity   = %d\n", dcbSerialParams.Parity);
+		fprintf(stderr, "		EOFChar  = %d\n", dcbSerialParams.EofChar);
 	}
 	else
 	{
-		list->count = cnt;
+		fprintf(stderr, "Serial: Set COM DCB Structure Success.\n");
+		fprintf(stderr, "		Baudrate = %d\n", dcbSerialParams.BaudRate);
+		fprintf(stderr, "		ByteSize = %d\n", dcbSerialParams.ByteSize);
+		fprintf(stderr, "		StopBits = %d\n", dcbSerialParams.StopBits);
+		fprintf(stderr, "		Parity   = %d\n", dcbSerialParams.Parity);
+		fprintf(stderr, "		EOFChar  = %d\n", dcbSerialParams.EofChar);
 	}
-}
 
-void usb_serial_free_device_list(usb_serial_device_list * list)
-{
-	if(list->list != NULL && list->count > 0)
-		libusb_free_device_list(list->list, 1);
-}
+	COMMTIMEOUTS timeouts = { 0 };
 
-void usb_serial_print_device_list(usb_serial_device_list * list)
-{
-	if (list->list != NULL && list->count > 0)
+	timeouts.ReadIntervalTimeout	     = args.readIntervalTimeout         ? args.readIntervalTimeout         : SERIAL_DEFAULT_READ_INTERVAL_TIMEOUT;
+	timeouts.ReadTotalTimeoutConstant    = args.readTotalTimeoutConstant    ? args.readTotalTimeoutConstant    : SERIAL_DEFAULT_READ_TOTAL_TIMEOUT_CT;
+	timeouts.ReadTotalTimeoutMultiplier  = args.readTotalTimeoutMultiplier  ? args.readTotalTimeoutMultiplier  : SERIAL_DEFAULT_READ_TOTAL_MULTIPLIER;
+	timeouts.WriteTotalTimeoutConstant   = args.writeTotalTimeoutConstant   ? args.writeTotalTimeoutConstant   : SERIAL_DEFAULT_WRITE_TOTAL_TIMEOUT_CT;
+	timeouts.WriteTotalTimeoutMultiplier = args.writeTotalTimeoutMultiplier ? args.writeTotalTimeoutMultiplier : SERIAL_DEFAULT_WRITE_TOTAL_MULTIPLIER;
+
+	//Use this value for checking - but all must be initialized
+	if (timeouts.ReadIntervalTimeout)
 	{
-		putchar('\n');
-		printf("USB Serial Devices List\n");
-		for (int i = 0; i < list->count; i++)
+		status = SetCommTimeouts(hComm, &timeouts);
+		if (status == FALSE)
 		{
-			libusb_device * device = list->list[i];
-			print_device(device, 0);
+			fprintf(stderr, "Serial: SetCommTimeouts() error. Using no values for timeouts.\n");
 		}
-		putchar('\n');
+		else
+		{
+			fprintf(stderr, "Serial: Set port timeouts successfull.\n");
+		}
 	}
+
+	return hComm;
 }
 
-ssize_t usb_serial_get_device_index_from_id(usb_serial_device_list * list, uint16_t id)
+BOOL serial_writeBytes(HANDLE hComm, LPCSTR charArray, DWORD NbytesToWrite)
 {
-	for (int i = 0; i < list->count; i++)
+	//Check if the handle is in fact valid
+	if (hComm == INVALID_HANDLE_VALUE)
 	{
-		libusb_device* local_device = list->list[i];
-		struct libusb_device_descriptor desc;
-		libusb_device_handle* handle = NULL;
-		char description[256];
-		char string[256];
-		int dd_ret;
-
-		dd_ret = libusb_get_device_descriptor(local_device, &desc);
-		if (dd_ret < 0)
-		{
-			fprintf_s(stderr, "libusb: Failed to get device descriptor. Error: %#08X\n", dd_ret);
-		}
-		dd_ret = libusb_open(local_device, &handle);
-		if (LIBUSB_SUCCESS != dd_ret)
-		{
-			if (desc.idProduct == id)
-			{
-				//Found device based on id
-				return i;
-			}
-			//Did not find device
-			libusb_close(handle);
-		}
+		fprintf(stderr, "Serial: HANDLE %u is invalid.\n", (uintptr_t)hComm);
+		return FALSE;
 	}
-	return -1;
+
+	DWORD NbytesWritten = 0;
+
+	//Tx the array to the device
+	BOOL status = WriteFile(hComm, charArray, NbytesToWrite, &NbytesWritten, NULL);
+
+	if (status == FALSE)
+	{
+		fprintf(stderr, "Serial: Tx of data failed: .\n");
+		fprintf(stderr, "		Serial port = %u\n", (uintptr_t)hComm);
+		fprintf(stderr, "		Serial data = %s\n", charArray);
+		fprintf(stderr, "		Error       = %ul\n", GetLastError());
+		return FALSE;
+	}
+
+	return TRUE;
+
 }
 
-ssize_t usb_serial_get_device_index_from_name(usb_serial_device_list * list, const char* name)
+BOOL serial_readBytes(HANDLE hComm, LPTSTR buffer, DWORD bufferSize, LPDWORD readBufferSize)
 {
-	for (int i = 0; i < list->count; i++)
+	//Check if the handle is in fact valid
+	if (hComm == INVALID_HANDLE_VALUE)
 	{
-		libusb_device* local_device = list->list[i];
-		struct libusb_device_descriptor desc;
-		libusb_device_handle* handle = NULL;
-		char string[256];
-		int dd_ret;
-
-		dd_ret = libusb_get_device_descriptor(local_device, &desc);
-		if (dd_ret < 0)
-		{
-			fprintf_s(stderr, "libusb: Failed to get device descriptor. Error: %#08X\n", dd_ret);
-		}
-		dd_ret = libusb_open(local_device, &handle);
-		if (LIBUSB_SUCCESS == dd_ret)
-		{
-			if (desc.iProduct)
-			{
-				dd_ret = libusb_get_string_descriptor_ascii(handle, desc.iProduct, string, sizeof(string));
-				if (dd_ret > 0)
-				{
-					int value = strcmp(string, name);
-					if (value == 0)
-					{
-						//Found device
-						return i;
-					}
-				}
-			}
-			//Did not find device
-			libusb_close(handle);
-		}
+		fprintf(stderr, "Serial: HANDLE %u is invalid.\n", (uintptr_t)hComm);
+		return FALSE;
 	}
-	return -1;
+
+	DWORD dwEventMask = 0;
+	char  localSerialBuffer[SERIAL_DEFAULT_READ_BUFFER_SIZE];
+
+	//Receive any byte
+	BOOL status = SetCommMask(hComm, EV_RXCHAR);
+
+	if (status == FALSE)
+	{
+		fprintf(stderr, "Serial: SetCommMask() error. Event %d might be invalid.\n", EV_RXCHAR);
+		fprintf(stderr, "Serial: Extended error: %ul\n", GetLastError());
+		return FALSE;
+	}
+
+	//Wait for the data
+	status = WaitCommEvent(hComm, &dwEventMask, NULL);
+
+	if (status == FALSE)
+	{
+		fprintf(stderr, "Serial: WaitCommEvent() error.\n");
+		fprintf(stderr, "Serial: Extended error: %ul\n", GetLastError());
+		return FALSE;
+	}
+
+	//Start reading the Rxed data
+	int i = 0;
+	int excess = 0;
+	int last = 0;
+	while (TRUE)
+	{
+		char tempChar = 0;
+		DWORD NbytesRead = 0;
+
+		status = ReadFile(hComm, &tempChar, sizeof(tempChar), &NbytesRead, NULL);
+		if (status == FALSE) break;
+
+		if (i == SERIAL_DEFAULT_READ_BUFFER_SIZE)
+		{
+			excess++;
+			if (tempChar == SERIAL_DEFAULT_READ_RX_EOF) break;
+			continue;
+		}
+
+		last = i;
+		localSerialBuffer[i++] = tempChar;
+
+		if (tempChar == SERIAL_DEFAULT_READ_RX_EOF) break;
+	}
+
+	if (i == SERIAL_DEFAULT_READ_BUFFER_SIZE && localSerialBuffer[SERIAL_DEFAULT_READ_BUFFER_SIZE - 1] != SERIAL_DEFAULT_READ_RX_EOF)
+	{
+		fprintf(stderr, "Serial: Rx of data incomplete.\n");
+		fprintf(stderr, "		Read Buffer Size = %d\n", SERIAL_DEFAULT_READ_BUFFER_SIZE);
+		fprintf(stderr, "		Received Size    = %d\n", excess + i);
+		fprintf(stderr, "		Ignoring Size    = %d\n", excess);
+		fprintf(stderr, "		Received Bytes   = %s\n", localSerialBuffer);
+		fprintf(stderr, "		Terminated       = %s\n", "False");
+		return FALSE;
+	}
+
+	if (status == FALSE)
+	{
+		fprintf(stderr, "Serial: Rx of data failed.\n");
+		fprintf(stderr, "Serial: Extended error: %ul\n", GetLastError());
+		fprintf(stderr, "		Read Buffer Size = %d\n", SERIAL_DEFAULT_READ_BUFFER_SIZE);
+		fprintf(stderr, "		Received Size    = %d\n", excess + i);
+		fprintf(stderr, "		Ignoring Size    = %d\n", excess);
+		fprintf(stderr, "		Received Bytes   = %s\n", localSerialBuffer);
+		fprintf(stderr, "		Terminated       = %s\n", localSerialBuffer[last] == '\n' ? "True" : "False");
+		return FALSE;
+	}
+
+	//Replace the terminator char for a string terminator
+	localSerialBuffer[last] = '\0';
+
+	//Copy the data to the argument buffer
+	DWORD localBufferSize = strlen(localSerialBuffer);
+
+	if (bufferSize >= localBufferSize)
+	{
+		strcpy_s(buffer, localBufferSize, localSerialBuffer);
+		*readBufferSize = localBufferSize;
+	}
+	else
+	{
+		fprintf(stderr, "Serial: Rx copy of data failed.\n");
+		fprintf(stderr, "Serial: Size of user buffer is too small.\n");
+		fprintf(stderr, "		Read Buffer Size = %d\n", SERIAL_DEFAULT_READ_BUFFER_SIZE);
+		fprintf(stderr, "		User Buffer Size = %d\n", bufferSize);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+BOOL serial_closeHandle(HANDLE hComm)
+{
+	return CloseHandle(hComm);
 }

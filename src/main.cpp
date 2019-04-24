@@ -22,6 +22,7 @@
 //Fix an error with thread concurrency at ThreadManager.cpp : 67 -> pool erased
 //Create a system where there can be more than one .ini file, for multiple configurations
 //Fix directory non existent for data or config files
+
 int main(int argc, char* argv[])
 {
 	//Initialize default windows handle for operation
@@ -96,26 +97,6 @@ int main(int argc, char* argv[])
 
 	fclose(f);
 
-	libusb_context ** ctx = NULL;
-
-	usb_serial_init_libusb(ctx, 0);
-	usb_serial_device_list lst;
-	usb_serial_get_device_list(ctx, &lst);
-	usb_serial_print_device_list(&lst);
-
-	//lst works here for access only
-
-	ssize_t s = usb_serial_get_device_index_from_id(&lst, 0x0717B);
-
-	std::cout << std::dec << "Index of found device [by id]: " << s << std::endl;
-
-	s = usb_serial_get_device_index_from_name(&lst, "USB Optical Mouse");
-
-	std::cout << std::dec << "Index of found device [by name]: " << s << std::endl;
-
-	usb_serial_free_device_list(&lst);
-	usb_serial_deinit_libusb(ctx);
-
 	std::cout << "Program uptime: " << Timer::apiUptimeString() << std::endl;
 
 	//CFlush::ClearConsole(0, CFlush::rows - THREAD_CONCURRENCY);
@@ -158,10 +139,10 @@ int test()
 	if (Status == FALSE)
 		printf("\n   Error! in GetCommState()");
 
-	dcbSerialParams.BaudRate = 921600;      // Setting BaudRate = 921600
-	dcbSerialParams.ByteSize = 8;             // Setting ByteSize = 8
-	dcbSerialParams.StopBits = ONESTOPBIT;    // Setting StopBits = 1
-	dcbSerialParams.Parity = NOPARITY;      // Setting Parity = None 
+	dcbSerialParams.BaudRate = 921600;			// Setting BaudRate = 921.6 kBd
+	dcbSerialParams.ByteSize = 8;				// Setting ByteSize = 8
+	dcbSerialParams.StopBits = ONESTOPBIT;		// Setting StopBits = 1
+	dcbSerialParams.Parity = NOPARITY;			// Setting Parity = None 
 
 	Status = SetCommState(hComm, &dcbSerialParams);  //Configuring the port according to settings in DCB 
 
@@ -180,7 +161,7 @@ int test()
 
 	/*------------------------------------ Setting Timeouts --------------------------------------------------*/
 
-	/*COMMTIMEOUTS timeouts = { 0 };
+	COMMTIMEOUTS timeouts = { 0 };
 
 	timeouts.ReadIntervalTimeout = 50;
 	timeouts.ReadTotalTimeoutConstant = 50;
@@ -191,7 +172,7 @@ int test()
 	if (SetCommTimeouts(hComm, &timeouts) == FALSE)
 		printf("\n   Error! in Setting Time Outs");
 	else
-		printf("\n\n   Setting Serial Port Timeouts Successfull");*/
+		printf("\n\n   Setting Serial Port Timeouts Successfull");
 
 	char   lpBuffer[] = "1VA15;1PA0;1WS1;1TP?\r";// lpBuffer should be  char or byte array, otherwise write wil fail
 	DWORD  dNoOFBytestoWrite;               // No of bytes to write into the port
@@ -210,10 +191,10 @@ int test()
 	else
 		printf("\n\n   Error %d in Writing to Serial Port\n", GetLastError());
 
-	DWORD dwEventMask;                     // Event mask to trigger
-	char  TempChar;                        // Temperory Character
-	char  SerialBuffer[256];               // Buffer Containing Rxed Data
-	DWORD NoBytesRead;                     // Bytes read by ReadFile()
+	DWORD dwEventMask = 0;                     // Event mask to trigger
+	char  TempChar = 0;                        // Temporary Character
+	char  SerialBuffer[256];				   // Buffer Containing Rxed Data
+	DWORD NoBytesRead = 0;                     // Bytes read by ReadFile()
 	int i = 0;
 
 	Status = SetCommMask(hComm, EV_RXCHAR); //Configure Windows to Monitor the serial device for Character Reception
@@ -241,12 +222,14 @@ int test()
 		printf("\n\n    Characters Received = ");
 		while(true)
 		{
-			Status = ReadFile(hComm, &TempChar, sizeof(TempChar), &NoBytesRead, NULL);
+			if (!ReadFile(hComm, &TempChar, sizeof(TempChar), &NoBytesRead, NULL))
+			{
+				break;
+			}
 			SerialBuffer[i] = TempChar;
 			i++;
 			if (TempChar == '\n') break;
 		}
-
 
 
 		/*------------Printing the RXed String to Console----------------------*/

@@ -95,6 +95,13 @@ int main(int argc, char* argv[])
 	manager.joinThreadSync(tid_1);
 	//manager.joinThreadSync(tid_2);
 
+	HANDLE coms = serial_initHandle("COM4", GENERIC_READ | GENERIC_WRITE, { 0 });
+	serial_writeBytes(coms, "1PA12.34;1WS;1TP?\r", 19);
+	char buffer[256];
+	DWORD size = 0;
+	serial_readBytes(coms, buffer, 256, &size);
+	serial_closeHandle(coms);
+
 	fclose(f);
 
 	std::cout << "Program uptime: " << Timer::apiUptimeString() << std::endl;

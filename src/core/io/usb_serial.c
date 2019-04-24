@@ -28,7 +28,7 @@ HANDLE serial_initHandle(LPCSTR portName, DWORD rwAccess, SerialArgs args)
 	}
 	else
 	{
-		fprintf(stderr, "Serial: Port %s opened.", portName);
+		fprintf(stderr, "Serial: Port %s opened.\n", portName);
 	}
 
 	DCB dcbSerialParams = { 0 };

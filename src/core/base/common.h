@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <algorithm>
+#include <sstream>
 #include <vector>
 #include <NIDAQmx.h>
 
@@ -42,4 +43,12 @@ inline intptr_t* convertToIntPointer(T first, Args... args)
 	std::vector<intptr_t> ret = convertToIntPointerH(first, args...);
 	std::reverse(ret.begin(), ret.end());
 	return ret.data();
+}
+
+inline std::string tostring_prec(const float value, const int precision = 4)
+{
+	std::ostringstream out;
+	out.precision(precision);
+	out << std::fixed << value;
+	return out.str();
 }

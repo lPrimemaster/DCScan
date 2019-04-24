@@ -28,7 +28,7 @@ extern "C" {
 
 	HANDLE serial_initHandle(LPCSTR portName, DWORD rwAccess, SerialArgs args);
 	BOOL   serial_writeBytes(HANDLE hComm, LPCSTR charArray, DWORD NbytesToWrite);
-	BOOL   serial_readBytes(HANDLE hComm, LPTSTR * buffer, DWORD bufferSize, LPDWORD readBufferSize);
+	BOOL   serial_readBytes(HANDLE hComm, LPTSTR buffer, DWORD bufferSize, LPDWORD readBufferSize);
 	BOOL   serial_closeHandle(HANDLE hComm);
 
 	/* Implementation specific functions */

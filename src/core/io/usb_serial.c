@@ -40,7 +40,7 @@ HANDLE serial_initHandle(LPCSTR portName, DWORD rwAccess, SerialArgs args)
 	if (status == FALSE)
 		fprintf(stderr, "Serial: GetCommState() error. Using default or suplied values instead.\n");
 
-	/* Defaults - BDR: 921.6kBd - BSZ: 8bits - SBT: OneStop - PAR: NoParity - EOFC: Carriage return*/
+	/* Defaults - BDR: 921.6kBd - BSZ: 8bits - SBT: OneStop - PAR: NoParity - EOFC: Carriage return */
 	dcbSerialParams.BaudRate = args.baudRate ? args.baudRate : (dcbSerialParams.BaudRate ? dcbSerialParams.BaudRate : SERIAL_DEFAULT_BAUD);
 	dcbSerialParams.ByteSize = args.byteSize ? args.byteSize : (dcbSerialParams.ByteSize ? dcbSerialParams.ByteSize : SERIAL_DEFAULT_BYTE);
 	dcbSerialParams.StopBits = args.stopBits ? args.stopBits : (dcbSerialParams.StopBits ? dcbSerialParams.StopBits : SERIAL_DEFAULT_SBIT);
@@ -121,7 +121,7 @@ BOOL serial_writeBytes(HANDLE hComm, LPCSTR charArray, DWORD NbytesToWrite)
 
 }
 
-BOOL serial_readBytes(HANDLE hComm, LPTSTR * buffer, DWORD bufferSize, LPDWORD readBufferSize)
+BOOL serial_readBytes(HANDLE hComm, LPTSTR buffer, DWORD bufferSize, LPDWORD readBufferSize)
 {
 	//Check if the handle is in fact valid
 	if (hComm == INVALID_HANDLE_VALUE)
@@ -209,7 +209,7 @@ BOOL serial_readBytes(HANDLE hComm, LPTSTR * buffer, DWORD bufferSize, LPDWORD r
 
 	if (bufferSize >= localBufferSize)
 	{
-		strcpy_s(*buffer, localBufferSize, localSerialBuffer);
+		strcpy_s(buffer, bufferSize, localSerialBuffer);
 		*readBufferSize = localBufferSize;
 	}
 	else

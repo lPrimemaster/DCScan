@@ -116,6 +116,6 @@ std::string SerialCom::getResponse()
 {
 	char response[256];
 	DWORD rbSize = 0;
-	bool val = serial_readBytes(handle, (char**)&response, 256, &rbSize);
+	bool val = serial_readBytes(handle, response, 256, &rbSize);
 	return std::string(response);
 }

@@ -114,7 +114,9 @@ int main(int argc, char* argv[])
 	char buffer[256];
 	DWORD abs = 0;
 
-	serial_readBytes(serial, (char**)&buffer, 256, &abs);
+	//serial_writeBytes(serial, "A", 1);
+
+	serial_readBytes(serial, buffer, 256, &abs);
 
 	printf("Received: '%s' from arduino!\n", buffer);
 

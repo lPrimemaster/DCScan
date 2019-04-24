@@ -13,17 +13,26 @@ namespace IO
 
 	struct IniFileProperties
 	{
-		std::vector<const char*> section = { "VERSION", "IOLOC", "UPDATESRV", "ACQSETTINGS", "CTRLSETTINGS" };
+		std::vector<const char*> section = { "Version", "IOLocation", "UpdateServer", "AcquireSettings", "ControlSettings" };
 		std::map<const char*, std::vector<const char*>> sub_sec =
 		{
-			{ "VERSION",		{ "MAJOR", "MINOR" } },											//VERSION
-			{ "IOLOC",			{ "NAME", "RELATIVE_PATH", "ABSOLUTE_PATH", "EXTENSION" } },	//IOLOC
-			{ "UPDATESRV",		{ "PROTOCOL", "URL" } },										//UPDATESERV
-			{ "ACQSETTINGS",	{ "DEFAULT_TIMER" } },											//ACQSETTINGSS
-			{ "CTRLSETTINGS",	{ "DEFAULT_DELTA" } }											//CTRLSETTINGS
+			{ "Version",			{ "major", "minor" } },											//Version
+			{ "IOLocation",			{ "name", "relative_path", "absolute_path", "extension" } },	//IOLocation
+			{ "UpdateServer",		{ "protocol", "url" } },										//UpdateServer
+			{ "AcquireSettings",	{	"default_timer",
+										"default_channel",
+										"default_assigned",
+										"default_units",
+										"default_min",
+										"default_max",
+										"default_spc"
+									} 
+			},																						//AcquireSettings
+			{ "ControlSettings",	{ "default_delta" } }											//ControlSettings
 		};
 	};
 
 	void createIniFile(LPCTSTR name);
 	IniFileData readIniFile(LPCTSTR name);
+	IniFileData readCfgFile(LPCTSTR name);
 }

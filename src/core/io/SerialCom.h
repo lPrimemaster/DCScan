@@ -19,8 +19,14 @@ public:
 	float moveAbsoluteSync(int axis, float target);
 	std::future<float> moveAbsoluteAsync(int axis, float target);
 
+	void moveAbsoluteAsyncNoWait(int axis, float target);
+
+	void waitForStop(int axis);
+
 	float moveRelativeSync(int axis, float target);
 	std::future<float> moveRelativeAsync(int axis, float target);
+
+	float getAbsoluteSync(int axis);
 
 private:
 	HANDLE handle;

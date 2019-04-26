@@ -43,7 +43,7 @@ ThreadManager::ThreadManager()
 				COORD pos = { 0, y - i };
 				DWORD len = strlen(str[ri]);
 				DWORD dwBytesWritten = 0;
-				//WriteConsoleOutputCharacter(hConsole_c, str[ri], len, pos, &dwBytesWritten);
+				WriteConsoleOutputCharacter(hConsole_c, str[ri], len, pos, &dwBytesWritten);
 				//CFlush::FlushConsoleString();
 #endif
 			}
@@ -84,12 +84,12 @@ ThreadManager::ThreadManager()
 					COORD pos = { 11, y - i };
 					DWORD len = strlen(stch);
 					DWORD dwBytesWritten = 0;
-					//WriteConsoleOutputCharacter(hConsole_c, stch, len, pos, &dwBytesWritten);
+					WriteConsoleOutputCharacter(hConsole_c, stch, len, pos, &dwBytesWritten);
 				}
 			}
 			//Prevent this gui from showing up too fast
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
-			//CFlush::ClearConsole(y - THREAD_CONCURRENCY, THREAD_CONCURRENCY + 1);
+			CFlush::ClearConsole(y - THREAD_CONCURRENCY, THREAD_CONCURRENCY + 1);
 		}
 		//Flag ending
 		deinit.store(2);

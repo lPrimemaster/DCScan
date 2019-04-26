@@ -9,7 +9,7 @@ SerialCom::SerialCom(std::string port)
 	SerialArgs args;
 	args.baudRate = 9600;		//921.6 kBd
 	args.byteSize = 8;			//8 bit size
-	args.eofChar = '\r';		//Carriage return command eof
+	args.eofChar = '\r';		//Carriage return command eof (?)
 	args.parity = NOPARITY;		//No parity
 	args.stopBits = ONESTOPBIT;	//One stop bit
 
@@ -100,7 +100,7 @@ std::future<float> SerialCom::moveRelativeAsync(int axis, float target)
 
 bool SerialCom::issueCommand(const std::string command, const int axis, const std::string right)
 {
-	const std::string value = std::to_string(axis) + command + right + ';';
+	const std::string value = axis ? std::to_string(axis) + command + right + ';' : command + right + ';';
 	const char* data = value.c_str();
 	return serial_writeBytes(handle, data, value.size());
 }

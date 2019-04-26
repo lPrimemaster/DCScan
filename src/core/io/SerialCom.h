@@ -3,23 +3,29 @@
 #include <unordered_map>
 #include <future>
 #include "usb_serial.h"
+#include "register.h"
 
 /* ESP301 specific control class */
-/* This is the mid range calling for each axis/motor, using boost.python for larger control */
+/* This is the mid range calling for each axis/motor, using boost.python later on for larger control */
 class SerialCom
 {
 public:
 	SerialCom(std::string port);
 	~SerialCom();
 
+	/* Non-control API */
+	void readDefaultValues(const std::string config);
+
+	/* Synchronous API */
 	bool turnOn(int axis);
 	bool turnOff(int axis);
 	bool queryOn(int axis);
 
 	float moveAbsoluteSync(int axis, float target);
-	std::future<float> moveAbsoluteAsync(int axis, float target);
-
 	float moveRelativeSync(int axis, float target);
+
+	/* Asynchronous API */
+	std::future<float> moveAbsoluteAsync(int axis, float target);
 	std::future<float> moveRelativeAsync(int axis, float target);
 
 private:
@@ -30,6 +36,8 @@ private:
 	bool executeCommand();
 	std::string getResponse();
 
-	const int precision = 4;
+	IO::IniFileProperties properties;
+
+	const int precision = 4; //this value will be parsed later from the config file
 };
 

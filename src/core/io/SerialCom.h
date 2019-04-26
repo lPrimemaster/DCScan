@@ -22,11 +22,22 @@ public:
 	bool queryOn(int axis);
 
 	float moveAbsoluteSync(int axis, float target);
+<<<<<<< HEAD
+=======
+	std::future<float> moveAbsoluteAsync(int axis, float target);
+
+	void moveAbsoluteAsyncNoWait(int axis, float target);
+
+	void waitForStop(int axis);
+
+>>>>>>> e9e30e2fd8e65ad01a46827d64f8f21470292b50
 	float moveRelativeSync(int axis, float target);
 
 	/* Asynchronous API */
 	std::future<float> moveAbsoluteAsync(int axis, float target);
 	std::future<float> moveRelativeAsync(int axis, float target);
+
+	float getAbsoluteSync(int axis);
 
 private:
 	HANDLE handle;

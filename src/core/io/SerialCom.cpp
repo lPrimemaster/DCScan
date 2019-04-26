@@ -7,9 +7,12 @@ SerialCom::SerialCom(std::string port)
 {
 	//Init with default settings for now - No timeouts set yes =>  All in accordance with Newport's "documentation"
 	SerialArgs args;
-	args.baudRate = 9600;		//921.6 kBd
+	args.baudRate = 921600;		//921.6 kBd
 	args.byteSize = 8;			//8 bit size
+<<<<<<< HEAD
 	args.eofChar = '\r';		//Carriage return command eof (?)
+=======
+>>>>>>> e9e30e2fd8e65ad01a46827d64f8f21470292b50
 	args.parity = NOPARITY;		//No parity
 	args.stopBits = ONESTOPBIT;	//One stop bit
 
@@ -73,6 +76,18 @@ std::future<float> SerialCom::moveAbsoluteAsync(int axis, float target)
 	return future;
 }
 
+void SerialCom::moveAbsoluteAsyncNoWait(int axis, float target)
+{
+	issueCommand("PA", axis, tostring_prec(target, precision));
+	executeCommand();
+}
+
+void SerialCom::waitForStop(int axis)
+{
+	issueCommand("WS", axis);
+	executeCommand();
+}
+
 float SerialCom::moveRelativeSync(int axis, float target)
 {
 	issueCommand("PR", axis, tostring_prec(target, precision));
@@ -96,6 +111,14 @@ std::future<float> SerialCom::moveRelativeAsync(int axis, float target)
 		}
 	);
 	return future;
+}
+
+float SerialCom::getAbsoluteSync(int axis)
+{
+	issueCommand("TP", axis, "?");
+	executeCommand();
+	float rx = atof(getResponse().c_str());
+	return rx;
 }
 
 bool SerialCom::issueCommand(const std::string command, const int axis, const std::string right)

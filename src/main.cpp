@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 	//Redirect cout to modified print - FIXME
 	std::stringstream outbuffer;
 	std::streambuf *outbuf = std::cout.rdbuf();
-	std::cout.rdbuf(outbuffer.rdbuf());
+	//std::cout.rdbuf(outbuffer.rdbuf());
 
 	ThreadManager manager;
 
@@ -97,40 +97,55 @@ int main(int argc, char* argv[])
 
 	fclose(f);
 
-	//SerialCom serial("COM6");
+	SerialCom serial("COM4");
 
-	//auto where_to = serial.moveAbsoluteAsync(1, 20.0000);
-	//where_to.wait();
+	//serial.turnOn(1);
 
-	SerialArgs args;
-	args.baudRate = 9600;		//921.6 kBd
-	args.byteSize = 8;			//8 bit size
-	args.eofChar = 3;		//Carriage return command eof
-	args.parity = NOPARITY;		//No parity
-	args.stopBits = ONESTOPBIT;	//One stop bit
+	auto q = serial.queryOn(1);
+	if (!q) std::cout << "Engine is not on! Turning on in 5 secs..." << std::endl;
+	CFlush::FlushConsoleStream(&outbuffer);
 
-	HANDLE serial = serial_initHandle("COM6", GENERIC_READ | GENERIC_WRITE, args);
+	std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 
-	char buffer[256];
-	DWORD abs = 0;
+	if(!q) serial.turnOn(1);
 
-	//serial_writeBytes(serial, "A", 1);
+	serial.moveAbsoluteAsyncNoWait(1, 0.0000);
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	auto got_pos = serial.getAbsoluteSync(1);
+	std::cout << "Position returned 1 sec after move: " << got_pos << std::endl;
 
-	serial_readBytes(serial, buffer, 256, &abs);
+	serial.waitForStop(1);
 
-	printf("Received: '%s' from arduino!\n", buffer);
+	//Return values are getting corrected after the position is acquired -> maybe disable PID controller (??) [KI, KD, KP]
 
-	serial_closeHandle(serial);
+	auto got_pos2 = serial.getAbsoluteSync(1);
+	std::cout << "Position returned: " << got_pos2 << std::endl;
+
+	CFlush::FlushConsoleStream(&outbuffer);
+	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+	auto where_to2 = serial.moveAbsoluteAsync(1, 90.0000);
+	where_to2.wait();
+	std::cout << "Position returned: " << where_to2.get() << std::endl;
+
+	CFlush::FlushConsoleStream(&outbuffer);
+	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+	auto where_to3 = serial.moveRelativeAsync(1, -10.0000);
+	where_to3.wait();
+	std::cout << "Position returned: " << where_to3.get() << std::endl;
+
+	serial.turnOff(1);
+
+	CFlush::FlushConsoleStream(&outbuffer);
 
 	std::cout << "Program uptime: " << Timer::apiUptimeString() << std::endl;
 
-	CFlush::ClearConsole(0, CFlush::rows - THREAD_CONCURRENCY);
+	//CFlush::ClearConsole(0, CFlush::rows - THREAD_CONCURRENCY);
 	CFlush::FlushConsoleStream(&outbuffer);
 
 	//Always revert the .ini file to default for safety purposes and test only
 	IO::createIniFile("config\\default.ini");
-
-	CFlush::FlushConsoleStream(&outbuffer);
 
 	//Close the handle only when all user threads stopped
 	CFlush::CloseHandle();

@@ -45,7 +45,7 @@ HANDLE serial_initHandle(LPCSTR portName, DWORD rwAccess, SerialArgs args)
 	dcbSerialParams.ByteSize = args.byteSize ? args.byteSize : (dcbSerialParams.ByteSize ? dcbSerialParams.ByteSize : SERIAL_DEFAULT_BYTE);
 	dcbSerialParams.StopBits = args.stopBits ? args.stopBits : (dcbSerialParams.StopBits ? dcbSerialParams.StopBits : SERIAL_DEFAULT_SBIT);
 	dcbSerialParams.Parity   = args.parity   ? args.parity   : (dcbSerialParams.Parity   ? dcbSerialParams.Parity   : SERIAL_DEFAULT_PARY);
-	dcbSerialParams.EofChar  = args.eofChar  ? args.eofChar  : (dcbSerialParams.EofChar  ? dcbSerialParams.EofChar  : SERIAL_DEFAULT_EOFC);
+	//dcbSerialParams.EofChar  = args.eofChar  ? args.eofChar  : (dcbSerialParams.EofChar  ? dcbSerialParams.EofChar  : SERIAL_DEFAULT_EOFC);
 
 	status = SetCommState(hComm, &dcbSerialParams); //[Re]configure the port with DCB params
 
@@ -172,7 +172,7 @@ BOOL serial_readBytes(HANDLE hComm, LPTSTR buffer, DWORD bufferSize, LPDWORD rea
 			continue;
 		}
 
-		last = i;
+		last = i - 1;
 		localSerialBuffer[i++] = tempChar;
 
 		if (tempChar == SERIAL_DEFAULT_READ_RX_EOF) break;
@@ -201,7 +201,7 @@ BOOL serial_readBytes(HANDLE hComm, LPTSTR buffer, DWORD bufferSize, LPDWORD rea
 		return FALSE;
 	}
 
-	//Replace the terminator char for a string terminator
+	//Replace the terminator char for a string terminator -> last = \r
 	localSerialBuffer[last] = '\0';
 
 	//Copy the data to the argument buffer

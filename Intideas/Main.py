@@ -7,22 +7,28 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from NewRec import *
-from Records import *
+from NewRec import Ui_MainWindow1
+from Records import Ui_MainWindow2
+
 
 class Ui_MainWindow(object):
 
     def a1(self):
         self.window=QtWidgets.QMainWindow()
-        self.ui2=Ui_MainWindow1()
+        self.ui1=Ui_MainWindow1()
+        self.ui1.setup(self.window)
+        self.window.show()
+
+
+
+    def a2(self):
+        self.window = QtWidgets.QMainWindow()
+        self.ui2 = Ui_MainWindow2()
         self.ui2.setup(self.window)
         self.window.show()
 
-    def a2(self):
-        self.window=QtWidgets.QMainWindow()
-        self.ui1=Ui_MainWindow2()
-        self.ui1.setup(self.window)
-        self.window.show()
+
+
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -36,7 +42,7 @@ class Ui_MainWindow(object):
         self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_2.setGeometry(QtCore.QRect(70, 180, 75, 23))
         self.pushButton_2.setObjectName("pushButton_2")
-        self.pushButton_2.clicked.connect(self.a2)
+        self.pushButton.clicked.connect(self.a2)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 514, 21))
@@ -52,8 +58,10 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.pushButton.setText(_translate("MainWindow", "New"))
+        self.pushButton.setText(_translate("MainWindow", "New Record"))
         self.pushButton_2.setText(_translate("MainWindow", "Last Record"))
+
+
 
 
 if __name__ == "__main__":

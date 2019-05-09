@@ -90,15 +90,15 @@ namespace IO
 		GetFullPathName(name, 64, path, NULL);
 		IniFileProperties properties;
 
-		//64 bytes max string on ini file
+		//128 bytes max string on ini file
 		IniFileData data;
 
 		for (auto section : properties.section)
 		{
 			for (auto sub_sec : properties.sub_sec[section])
 			{
-				char buffer[64];
-				DWORD error = GetPrivateProfileString(section, sub_sec, "Unknown", buffer, 64, path);
+				char buffer[128];
+				DWORD error = GetPrivateProfileString(section, sub_sec, "Unknown", buffer, 128, path);
 				data[section][sub_sec] = buffer;
 			}
 		}
@@ -123,20 +123,27 @@ namespace IO
 		//64 bytes max string on cfg file
 		IniFileData data;
 
-		char buffer[64];
+		char buffer[128];
 		DWORD error;
 
-		error = GetPrivateProfileString("Version", "Major", "Unknown", buffer, 64, path);
+		error = GetPrivateProfileString("Version", "Major", "Unknown", buffer, 128, path);
 		data["Version"]["Major"] = buffer;
-		error = GetPrivateProfileString("Version", "Minor", "Unknown", buffer, 64, path);
+		error = GetPrivateProfileString("Version", "Minor", "Unknown", buffer, 128, path);
 		data["Version"]["Minor"] = buffer;
 
-		error = GetPrivateProfileString("Version", "Type", "Unknown", buffer, 64, path);
+		error = GetPrivateProfileString("Version", "Type", "Unknown", buffer, 128, path);
 		data["Version"]["Type"] = buffer;
 
-		error = GetPrivateProfileString("Version", "Build", "Unknown", buffer, 64, path);
+		error = GetPrivateProfileString("Version", "Build", "Unknown", buffer, 128, path);
 		data["Version"]["Build"] = buffer;
 
 		return data;
+	}
+
+	bool valueHasBracket(const std::string & str)
+	{
+		if(str.find(' ') == std::string::npos)
+			return false;
+		return true;
 	}
 }

@@ -21,6 +21,89 @@ SerialCom::~SerialCom()
 	serial_closeHandle(handle);
 }
 
+bool SerialCom::loadConfig(IO::IniFileData data)
+{
+	auto iofp = IO::IniFileProperties();
+	auto values = iofp.sub_sec.at("ControlSettings");
+
+	const std::map<std::string, std::string> orderedCommands = {
+		{ values.at(0) , "??" }, //Default delta ? Ignored
+		{ values.at(1) , "QM" },
+		{ values.at(2) , "SN" },
+		{ values.at(3) , "FP" },
+		{ values.at(4) , "ZB" },
+		{ values.at(5) , "ZA" },
+		{ values.at(6) , "ZE" },
+		{ values.at(7) , "ZF" },
+		{ values.at(8) , "ZH" },
+		{ values.at(9) , "ZS" },
+		{ values.at(10), "SU" },
+		{ values.at(11), "FR" },
+		{ values.at(12), "QS" },
+		{ values.at(13), "QV" },
+		{ values.at(14), "QI" },
+		{ values.at(15), "QG" },
+		{ values.at(16), "QT" },
+		{ values.at(17), "SL" },
+		{ values.at(18), "SR" },
+		{ values.at(19), "TJ" },
+		{ values.at(20), "OM" },
+		{ values.at(21), "VU" },
+		{ values.at(22), "VA" },
+		{ values.at(23), "JH" },
+		{ values.at(24), "JW" },
+		{ values.at(25), "OH" },
+		{ values.at(26), "VB" },
+		{ values.at(27), "AU" },
+		{ values.at(28), "AC" },
+		{ values.at(29), "AG" },
+		{ values.at(30), "AE" },
+		{ values.at(31), "JK" },
+		{ values.at(32), "KP" },
+		{ values.at(33), "KI" },
+		{ values.at(34), "KD" },
+		{ values.at(35), "VF" },
+		{ values.at(36), "AF" },
+		{ values.at(37), "KS" },
+		{ values.at(38), "FE" },
+		{ values.at(39), "DB" },
+		{ values.at(40), "CL" },
+		{ values.at(41), "QR" },
+		{ values.at(42), "QR" },
+		{ values.at(43), "SS" },
+		{ values.at(44), "GR" },
+		{ values.at(45), "SI" },
+		{ values.at(46), "SK" },
+		{ values.at(47), "SK" },
+		{ values.at(48), "BA" },
+		{ values.at(49), "CO" }
+	};
+
+	//Avoid ESP-301 buffer overflow with commands in the setup moment by waiting for the response of the controller
+	int k = 0;
+	for (auto mc : orderedCommands)
+	{
+		auto str = data["ControlSettings"][mc.first];
+		auto value = IO::convertBracketValue<std::string>(str);
+
+		for (int i = 0; i < 3; i++)
+		{
+			issueCommand(mc.second, i, value.at(i));
+		}
+
+		executeCommand();
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+		for (int i = 0; i < 3; i++)
+		{
+			/*issueCommand(mc.second, i, "?");
+			executeCommand();*/
+			//fprintf(stderr, "Read config %s = %s\n", mc.second.c_str(), getResponse().c_str());
+		}
+	}
+	return true;
+}
+
 bool SerialCom::turnOn(int axis)
 {
 	issueCommand("MO", axis);
@@ -39,7 +122,7 @@ bool SerialCom::turnOff(int axis)
 	return rx == "0";
 }
 
-bool SerialCom::queryOn(int axis)
+bool SerialCom::queryState(int axis)
 {
 	issueCommand("MO", axis, "?");
 	executeCommand();

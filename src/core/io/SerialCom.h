@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <future>
 #include "usb_serial.h"
+#include "register.h"
 
 /* ESP301 specific control class */
 /* This is the mid range calling for each axis/motor, using boost.python for larger control */
@@ -12,9 +13,11 @@ public:
 	SerialCom(std::string port);
 	~SerialCom();
 
+	bool loadConfig(IO::IniFileData data);
+
 	bool turnOn(int axis);
 	bool turnOff(int axis);
-	bool queryOn(int axis);
+	bool queryState(int axis);
 
 	float moveAbsoluteSync(int axis, float target);
 	std::future<float> moveAbsoluteAsync(int axis, float target);

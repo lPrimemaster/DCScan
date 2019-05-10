@@ -5,6 +5,7 @@
 #include "usb_serial.h"
 #include "register.h"
 
+
 /* ESP301 specific control class */
 /* This is the mid range calling for each axis/motor, using boost.python later on for larger control */
 class SerialCom
@@ -42,8 +43,6 @@ private:
 	bool issueCommand(const std::string command, const int axis = 0, const std::string right = "");
 	bool executeCommand();
 	std::string getResponse();
-
-	SerialParameters params;
 
 	const int precision = 4; //this value will be parsed later from the config file
 

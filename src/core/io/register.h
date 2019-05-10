@@ -6,7 +6,6 @@
 #include <Windows.h>
 #endif
 
-
 namespace IO
 {
 	typedef std::map<const char*, std::map<std::string, std::string>> IniFileData;
@@ -110,7 +109,7 @@ namespace IO
 			{
 				while (*it == ' ') it++;
 				//Break in substrings with commas, also, dispose of the brackets and spaces
-				char buffer[32];
+				char buffer[32] = { 0 };
 				int i = 0;
 				while (*it != ',')
 				{
@@ -140,7 +139,7 @@ namespace IO
 			{
 				while (*it == ' ') it++;
 				//Break in substrings with commas, also, dispose of the brackets and spaces
-				char buffer[32];
+				char buffer[32] = { 0 };
 				int i = 0;
 				while (*it != ',')
 				{
@@ -166,23 +165,26 @@ namespace IO
 		}
 		else
 		{
-			while (*it++ != '}')
+			while (*it != '}')
 			{
 				while (*it == ' ') it++;
 				//Break in substrings with commas, also, dispose of the brackets and spaces
-				char buffer[32];
+				char buffer[32] = { 0 };
 				int i = 0;
 				while (*it != ',')
 				{
 					if (*it == '}')
 						break;
-					else if (*it != ' ')
+					else if (*it != ' ' && *it != '{')
 						buffer[i++] = *it++;
 					else
 					{
 						it++;
 					}
 				}
+
+				buffer[i] = '\0';
+
 				out.push_back(buffer);
 			}
 			return out;

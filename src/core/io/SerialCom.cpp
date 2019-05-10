@@ -2,6 +2,7 @@
 #include <string>
 #include <algorithm>
 #include <typeinfo>
+#include <array>
 #include "../base/common.h"
 
 #define STRFY(x) #x
@@ -18,8 +19,6 @@ SerialCom::SerialCom(std::string port)
 	args.parity = NOPARITY;		//No parity
 	args.stopBits = ONESTOPBIT;	//One stop bit
 
-	params = { 0 };
-
 	handle = serial_initHandle(port.c_str(), GENERIC_READ | GENERIC_WRITE, args);
 }
 
@@ -35,8 +34,8 @@ bool SerialCom::loadConfig(IO::IniFileData data)
 	auto iofp = IO::IniFileProperties();
 	auto values = iofp.sub_sec.at("ControlSettings");
 
-	const std::map<std::string, std::string> orderedCommands = {
-		{ values.at(0) , "??" }, //Default delta ? Ignored
+	const std::array<std::array<std::string, 2>, 50> orderedCommands = { {
+		{ values.at(0) , "??" },
 		{ values.at(1) , "QM" },
 		{ values.at(2) , "SN" },
 		{ values.at(3) , "FP" },
@@ -86,18 +85,18 @@ bool SerialCom::loadConfig(IO::IniFileData data)
 		{ values.at(47), "SK" },
 		{ values.at(48), "BA" },
 		{ values.at(49), "CO" }
-	};
+	} };
 
 	//Avoid ESP-301 buffer overflow with commands in the setup moment by waiting for the response of the controller
 	int k = 0;
 	for (auto mc : orderedCommands)
 	{
-		auto str = data["ControlSettings"][mc.first];
+		auto str = data["ControlSettings"][mc[0]];
 		auto value = IO::convertBracketValue<std::string>(str);
 
 		for (int i = 0; i < 3; i++)
 		{
-			issueCommand(mc.second, i, value.at(i));
+			issueCommand(mc[1], i, value.at(i));
 		}
 
 		executeCommand();

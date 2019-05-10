@@ -13,8 +13,8 @@ namespace IO
 
 	struct IniFileProperties
 	{
-		std::vector<const char*> section = { "Version", "IOLocation", "UpdateServer", "AcquireSettings", "ControlSettings" };
-		std::map<const char*, std::vector<const char*>> sub_sec =
+		const std::vector<const char*> section = { "Version", "IOLocation", "UpdateServer", "AcquireSettings", "ControlSettings" };
+		const std::map<const char*, std::vector<const char*>> sub_sec =
 		{
 			{ "Version",			{ "major", "minor" } },											//Version
 			{ "IOLocation",			{ "name", "relative_path", "absolute_path", "extension" } },	//IOLocation

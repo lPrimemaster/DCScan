@@ -42,7 +42,7 @@ namespace IO
 
 		for (auto section : properties.section)
 		{
-			for (auto sub_sec : properties.sub_sec[section])
+			for (auto sub_sec : properties.sub_sec.at(section))
 			{
 				char buffer[64];
 				DWORD error = GetPrivateProfileString(section, sub_sec, "Unknown", buffer, 64, path);

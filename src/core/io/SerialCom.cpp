@@ -1,7 +1,12 @@
 #include "SerialCom.h"
 #include <string>
+#include <algorithm>
+#include <typeinfo>
 #include "../base/common.h"
 
+#define STRFY(x) #x
+
+#define INSERT_VALUE(value) typeid atof(dvValues[STRFY(value)].c_str());
 
 SerialCom::SerialCom(std::string port)
 {
@@ -9,12 +14,11 @@ SerialCom::SerialCom(std::string port)
 	SerialArgs args;
 	args.baudRate = 921600;		//921.6 kBd
 	args.byteSize = 8;			//8 bit size
-<<<<<<< HEAD
 	args.eofChar = '\r';		//Carriage return command eof (?)
-=======
->>>>>>> e9e30e2fd8e65ad01a46827d64f8f21470292b50
 	args.parity = NOPARITY;		//No parity
 	args.stopBits = ONESTOPBIT;	//One stop bit
+
+	params = { 0 };
 
 	handle = serial_initHandle(port.c_str(), GENERIC_READ | GENERIC_WRITE, args);
 }
@@ -23,6 +27,15 @@ SerialCom::SerialCom(std::string port)
 SerialCom::~SerialCom()
 {
 	serial_closeHandle(handle);
+}
+
+void SerialCom::readDefaultValues(IO::IniFileData data)
+{
+	IO::IniFileProperties properties;
+	std::vector<const char*> dvStrings = properties.sub_sec.at("ControlSettings");
+	auto dvValues = data["ControlSettings"];
+	
+	params.default_delta = atof(dvValues["default_delta"].c_str());
 }
 
 bool SerialCom::turnOn(int axis)

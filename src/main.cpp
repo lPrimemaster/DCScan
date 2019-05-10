@@ -24,6 +24,7 @@
 //Fix an error with thread concurrency at ThreadManager.cpp : 67 -> pool erased
 //Create a system where there can be more than one .ini file, for multiple configurations
 //Fix directory non existent for data or config files
+
 int main(int argc, char* argv[])
 {
 	//Initialize default windows handle for operation
@@ -83,8 +84,10 @@ int main(int argc, char* argv[])
 
 	//The following nomenclature is to be followed
 	//Convert all datatype pointers to intptr_t and then pass them to the required function or thread, unwrapping it latter
+	//auto ip = convertToIntPointer(f, &doptions);
+	intptr_t ip[2] = { reinterpret_cast<intptr_t>(f), reinterpret_cast<intptr_t>(&doptions) };
 	auto tid_0 = manager.addThread(acquireThread, &doptions);
-	auto tid_1 = manager.addThread(processThread, convertToIntPointer(f, &doptions));
+	auto tid_1 = manager.addThread(processThread, ip);
 	//auto tid_2 = manager.addThread(controlThread, NULL);
 
 	CFlush::FlushConsoleStream(&outbuffer);

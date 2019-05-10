@@ -102,9 +102,9 @@ int main(int argc, char* argv[])
 
 	SerialCom serial("COM4");
 
-	//serial.turnOn(1);
+	serial.loadConfig(data);
 
-	auto q = serial.queryOn(1);
+	auto q = serial.queryState(1);
 	if (!q) std::cout << "Engine is not on! Turning on in 5 secs..." << std::endl;
 	CFlush::FlushConsoleStream(&outbuffer);
 

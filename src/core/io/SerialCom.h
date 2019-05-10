@@ -5,12 +5,6 @@
 #include "usb_serial.h"
 #include "register.h"
 
-struct SerialParameters
-{
-	float default_delta;
-	int default_precision;
-};
-
 /* ESP301 specific control class */
 /* This is the mid range calling for each axis/motor, using boost.python later on for larger control */
 class SerialCom
@@ -20,12 +14,13 @@ public:
 	~SerialCom();
 
 	/* Non-control API */
-	void readDefaultValues(IO::IniFileData data);
+	bool loadConfig(IO::IniFileData data);
 
 	/* Synchronous API */
+
 	bool turnOn(int axis);
 	bool turnOff(int axis);
-	bool queryOn(int axis);
+	bool queryState(int axis);
 
 	float moveAbsoluteSync(int axis, float target);
 	float moveRelativeSync(int axis, float target);

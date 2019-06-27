@@ -102,41 +102,41 @@ int main(int argc, char* argv[])
 
 	fclose(f);
 
-	SerialCom serial("COM4");
+	SerialCom serial("COM3");
 
 	serial.loadConfig(data);
 
-	auto q = serial.queryState(1);
+	auto q = serial.queryState(3);
 	if (!q) std::cout << "Engine is not on! Turning on in 5 secs..." << std::endl;
 	CFlush::FlushConsoleStream(&outbuffer);
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 
-	if(!q) serial.turnOn(1);
+	if(!q) serial.turnOn(3);
 
-	serial.moveAbsoluteAsyncNoWait(1, 0.0000);
+	serial.moveAbsoluteAsyncNoWait(3, 0.0000);
 	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-	auto got_pos = serial.getAbsoluteSync(1);
+	auto got_pos = serial.getAbsoluteSync(3);
 	std::cout << "Position returned 1 sec after move: " << got_pos << std::endl;
 
 	serial.waitForStop(1);
 
 	//Return values are getting corrected after the position is acquired -> maybe disable PID controller (??) [KI, KD, KP]
 
-	auto got_pos2 = serial.getAbsoluteSync(1);
+	auto got_pos2 = serial.getAbsoluteSync(3);
 	std::cout << "Position returned: " << got_pos2 << std::endl;
 
 	CFlush::FlushConsoleStream(&outbuffer);
 	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
-	auto where_to2 = serial.moveAbsoluteAsync(1, 90.0000);
+	auto where_to2 = serial.moveAbsoluteAsync(3, 90.0000);
 	where_to2.wait();
 	std::cout << "Position returned: " << where_to2.get() << std::endl;
 
 	CFlush::FlushConsoleStream(&outbuffer);
 	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
-	auto where_to3 = serial.moveRelativeAsync(1, -10.0000);
+	auto where_to3 = serial.moveRelativeAsync(3, -10.0000);
 	where_to3.wait();
 	std::cout << "Position returned: " << where_to3.get() << std::endl;
 

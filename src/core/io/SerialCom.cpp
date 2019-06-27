@@ -93,7 +93,7 @@ bool SerialCom::loadConfig(IO::IniFileData data)
 	{
 		auto str = data["ControlSettings"][mc[0]];
 		auto value = IO::convertBracketValue<std::string>(str);
-
+#error fix -> convertBracketValue()
 		for (int i = 0; i < 3; i++)
 		{
 			issueCommand(mc[1], i, value.at(i));

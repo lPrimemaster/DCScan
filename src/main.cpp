@@ -84,12 +84,14 @@ int main(int argc, char* argv[])
 	//The following nomenclature is to be followed
 	//Convert all datatype pointers to intptr_t and then pass them to the required function or thread, unwrapping it latter
 	auto tid_0 = manager.addThread(acquireThread, &doptions);
-	auto tid_1 = manager.addThread(processThread, convertToIntPointer(f, &doptions));
+	//fix this function -> convertToIntPointer(f, &doptions)
+	intptr_t vals[2] = {reinterpret_cast<intptr_t>(f), reinterpret_cast<intptr_t>(&doptions) };
+	auto tid_1 = manager.addThread(processThread, vals);
 	//auto tid_2 = manager.addThread(controlThread, NULL);
 
 	CFlush::FlushConsoleStream(&outbuffer);
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 
 	manager.joinThreadSync(tid_0);
 	manager.joinThreadSync(tid_1);
@@ -97,30 +99,14 @@ int main(int argc, char* argv[])
 
 	fclose(f);
 
-	//SerialCom serial("COM6");
+	SerialCom serial("COM3");
 
-	//auto where_to = serial.moveAbsoluteAsync(1, 20.0000);
-	//where_to.wait();
+	bool on = serial.queryOn(3);
+	if (!on) serial.turnOn(3);
 
-	SerialArgs args;
-	args.baudRate = 9600;		//921.6 kBd
-	args.byteSize = 8;			//8 bit size
-	args.eofChar = 3;		//Carriage return command eof
-	args.parity = NOPARITY;		//No parity
-	args.stopBits = ONESTOPBIT;	//One stop bit
+	float wfd = serial.moveAbsoluteSync(3, 0.0f);
 
-	HANDLE serial = serial_initHandle("COM6", GENERIC_READ | GENERIC_WRITE, args);
-
-	char buffer[256];
-	DWORD abs = 0;
-
-	//serial_writeBytes(serial, "A", 1);
-
-	serial_readBytes(serial, buffer, 256, &abs);
-
-	printf("Received: '%s' from arduino!\n", buffer);
-
-	serial_closeHandle(serial);
+	std::cout << "Axis 3 moved to: " << wfd << std::endl;
 
 	std::cout << "Program uptime: " << Timer::apiUptimeString() << std::endl;
 

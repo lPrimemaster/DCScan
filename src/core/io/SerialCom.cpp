@@ -7,7 +7,7 @@ SerialCom::SerialCom(std::string port)
 {
 	//Init with default settings for now - No timeouts set yes =>  All in accordance with Newport's "documentation"
 	SerialArgs args;
-	args.baudRate = 9600;		//921.6 kBd
+	args.baudRate = 921600;		//921.6 kBd
 	args.byteSize = 8;			//8 bit size
 	args.eofChar = '\r';		//Carriage return command eof
 	args.parity = NOPARITY;		//No parity

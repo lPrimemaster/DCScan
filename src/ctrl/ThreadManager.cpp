@@ -190,7 +190,8 @@ bool ThreadManager::joinThreadAsync(std::thread::id threadId)
 	std::cerr << "Thread 0x" << std::hex << threadId << " is being detached" << std::endl;
 
 	delete flags[threadId];
-	delete obj[threadId];
+	if (obj[threadId] != nullptr)
+		delete obj[threadId];
 
 	obj.erase(threadId);
 	flags.erase(threadId);

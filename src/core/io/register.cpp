@@ -21,7 +21,7 @@ namespace IO
 		WritePrivateProfileString("UpdateServer", "url", "http://example.com", path);
 
 		WritePrivateProfileString("AcquireSettings", "default_timer", "10000.0", path);
-		WritePrivateProfileString("AcquireSettings", "default_channel", "dev1/ai0", path);
+		WritePrivateProfileString("AcquireSettings", "default_channel", "PXI_Slot2/ai0", path);
 		WritePrivateProfileString("AcquireSettings", "default_assigned", "", path);
 		WritePrivateProfileString("AcquireSettings", "default_units", "10348", path);
 		WritePrivateProfileString("AcquireSettings", "default_min", "-10.0", path);

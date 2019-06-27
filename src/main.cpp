@@ -14,16 +14,17 @@
 
 #include "core/io/SerialCom.h"
 
-//Options for later work : César
+//Options for later work : CÃ©sar
 //Opt 1 - NI-DAQmx intrinsic handshaking for communication with engines
 //Opt 2 - Software timing / event for communication with engines
 
-//TODOS : César
+//TODOS : CÃ©sar
 //Motors communication / control implementation
 //Api implementation for use in external GUI (for : Tiago ?)
 //Fix an error with thread concurrency at ThreadManager.cpp : 67 -> pool erased
 //Create a system where there can be more than one .ini file, for multiple configurations
 //Fix directory non existent for data or config files
+
 int main(int argc, char* argv[])
 {
 	//Initialize default windows handle for operation
@@ -36,7 +37,7 @@ int main(int argc, char* argv[])
 	//Redirect cout to modified print - FIXME
 	std::stringstream outbuffer;
 	std::streambuf *outbuf = std::cout.rdbuf();
-	std::cout.rdbuf(outbuffer.rdbuf());
+	//std::cout.rdbuf(outbuffer.rdbuf());
 
 	ThreadManager manager;
 
@@ -83,6 +84,8 @@ int main(int argc, char* argv[])
 
 	//The following nomenclature is to be followed
 	//Convert all datatype pointers to intptr_t and then pass them to the required function or thread, unwrapping it latter
+	//auto ip = convertToIntPointer(f, &doptions);
+  
 	auto tid_0 = manager.addThread(acquireThread, &doptions);
 	//fix this function -> convertToIntPointer(f, &doptions)
 	intptr_t vals[2] = {reinterpret_cast<intptr_t>(f), reinterpret_cast<intptr_t>(&doptions) };
@@ -99,24 +102,55 @@ int main(int argc, char* argv[])
 
 	fclose(f);
 
-	SerialCom serial("COM3");
+	SerialCom serial("COM4");
 
-	bool on = serial.queryOn(3);
-	if (!on) serial.turnOn(3);
+	serial.loadConfig(data);
 
-	float wfd = serial.moveAbsoluteSync(3, 0.0f);
+	auto q = serial.queryState(1);
+	if (!q) std::cout << "Engine is not on! Turning on in 5 secs..." << std::endl;
+	CFlush::FlushConsoleStream(&outbuffer);
 
-	std::cout << "Axis 3 moved to: " << wfd << std::endl;
+	std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+
+	if(!q) serial.turnOn(1);
+
+	serial.moveAbsoluteAsyncNoWait(1, 0.0000);
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	auto got_pos = serial.getAbsoluteSync(1);
+	std::cout << "Position returned 1 sec after move: " << got_pos << std::endl;
+
+	serial.waitForStop(1);
+
+	//Return values are getting corrected after the position is acquired -> maybe disable PID controller (??) [KI, KD, KP]
+
+	auto got_pos2 = serial.getAbsoluteSync(1);
+	std::cout << "Position returned: " << got_pos2 << std::endl;
+
+	CFlush::FlushConsoleStream(&outbuffer);
+	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+	auto where_to2 = serial.moveAbsoluteAsync(1, 90.0000);
+	where_to2.wait();
+	std::cout << "Position returned: " << where_to2.get() << std::endl;
+
+	CFlush::FlushConsoleStream(&outbuffer);
+	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+	auto where_to3 = serial.moveRelativeAsync(1, -10.0000);
+	where_to3.wait();
+	std::cout << "Position returned: " << where_to3.get() << std::endl;
+
+	serial.turnOff(1);
+
+	CFlush::FlushConsoleStream(&outbuffer);
 
 	std::cout << "Program uptime: " << Timer::apiUptimeString() << std::endl;
 
-	CFlush::ClearConsole(0, CFlush::rows - THREAD_CONCURRENCY);
+	//CFlush::ClearConsole(0, CFlush::rows - THREAD_CONCURRENCY);
 	CFlush::FlushConsoleStream(&outbuffer);
 
 	//Always revert the .ini file to default for safety purposes and test only
 	IO::createIniFile("config\\default.ini");
-
-	CFlush::FlushConsoleStream(&outbuffer);
 
 	//Close the handle only when all user threads stopped
 	CFlush::CloseHandle();

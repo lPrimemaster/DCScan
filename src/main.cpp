@@ -14,11 +14,11 @@
 
 #include "core/io/SerialCom.h"
 
-//Options for later work : César
+//Options for later work : CÃ©sar
 //Opt 1 - NI-DAQmx intrinsic handshaking for communication with engines
 //Opt 2 - Software timing / event for communication with engines
 
-//TODOS : César
+//TODOS : CÃ©sar
 //Motors communication / control implementation
 //Api implementation for use in external GUI (for : Tiago ?)
 //Fix an error with thread concurrency at ThreadManager.cpp : 67 -> pool erased
@@ -85,14 +85,16 @@ int main(int argc, char* argv[])
 	//The following nomenclature is to be followed
 	//Convert all datatype pointers to intptr_t and then pass them to the required function or thread, unwrapping it latter
 	//auto ip = convertToIntPointer(f, &doptions);
-	intptr_t ip[2] = { reinterpret_cast<intptr_t>(f), reinterpret_cast<intptr_t>(&doptions) };
+  
 	auto tid_0 = manager.addThread(acquireThread, &doptions);
-	auto tid_1 = manager.addThread(processThread, ip);
+	//fix this function -> convertToIntPointer(f, &doptions)
+	intptr_t vals[2] = {reinterpret_cast<intptr_t>(f), reinterpret_cast<intptr_t>(&doptions) };
+	auto tid_1 = manager.addThread(processThread, vals);
 	//auto tid_2 = manager.addThread(controlThread, NULL);
 
 	CFlush::FlushConsoleStream(&outbuffer);
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 
 	manager.joinThreadSync(tid_0);
 	manager.joinThreadSync(tid_1);

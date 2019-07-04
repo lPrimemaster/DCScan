@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
 				+ data["IOLocation"]["extension"]) << std::endl;
 		return -1;
 	}
-	fprintf(f, "Packet,Point,Data,Timestamp [Software],Timestamp [Hardware][us],Packet Delta [ms - us]\n");
+	fprintf(f, "Packet,Point,Data,Timestamp,\n");
 
 	//The following nomenclature is to be followed
 	//Convert all datatype pointers to intptr_t and then pass them to the required function or thread, unwrapping it latter
@@ -102,45 +102,45 @@ int main(int argc, char* argv[])
 
 	fclose(f);
 
-	SerialCom serial("COM3");
+	//SerialCom serial("COM3");
 
-	serial.loadConfig(data);
+	//serial.loadConfig(data);
 
-	auto q = serial.queryState(3);
-	if (!q) std::cout << "Engine is not on! Turning on in 5 secs..." << std::endl;
-	CFlush::FlushConsoleStream(&outbuffer);
+	//auto q = serial.queryState(3);
+	//if (!q) std::cout << "Engine is not on! Turning on in 5 secs..." << std::endl;
+	//CFlush::FlushConsoleStream(&outbuffer);
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+	//std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 
-	if(!q) serial.turnOn(3);
+	//if(!q) serial.turnOn(3);
 
-	serial.moveAbsoluteAsyncNoWait(3, 0.0000);
-	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-	auto got_pos = serial.getAbsoluteSync(3);
-	std::cout << "Position returned 1 sec after move: " << got_pos << std::endl;
+	//serial.moveAbsoluteAsyncNoWait(3, 0.0000);
+	//std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	//auto got_pos = serial.getAbsoluteSync(3);
+	//std::cout << "Position returned 1 sec after move: " << got_pos << std::endl;
 
-	serial.waitForStop(1);
+	//serial.waitForStop(1);
 
-	//Return values are getting corrected after the position is acquired -> maybe disable PID controller (??) [KI, KD, KP]
+	////Return values are getting corrected after the position is acquired -> maybe disable PID controller (??) [KI, KD, KP]
 
-	auto got_pos2 = serial.getAbsoluteSync(3);
-	std::cout << "Position returned: " << got_pos2 << std::endl;
+	//auto got_pos2 = serial.getAbsoluteSync(3);
+	//std::cout << "Position returned: " << got_pos2 << std::endl;
 
-	CFlush::FlushConsoleStream(&outbuffer);
-	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+	//CFlush::FlushConsoleStream(&outbuffer);
+	//std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
-	auto where_to2 = serial.moveAbsoluteAsync(3, 90.0000);
-	where_to2.wait();
-	std::cout << "Position returned: " << where_to2.get() << std::endl;
+	//auto where_to2 = serial.moveAbsoluteAsync(3, 90.0000);
+	//where_to2.wait();
+	//std::cout << "Position returned: " << where_to2.get() << std::endl;
 
-	CFlush::FlushConsoleStream(&outbuffer);
-	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+	//CFlush::FlushConsoleStream(&outbuffer);
+	//std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
-	auto where_to3 = serial.moveRelativeAsync(3, -10.0000);
-	where_to3.wait();
-	std::cout << "Position returned: " << where_to3.get() << std::endl;
+	//auto where_to3 = serial.moveRelativeAsync(3, -10.0000);
+	//where_to3.wait();
+	//std::cout << "Position returned: " << where_to3.get() << std::endl;
 
-	serial.turnOff(1);
+	//serial.turnOff(1);
 
 	CFlush::FlushConsoleStream(&outbuffer);
 

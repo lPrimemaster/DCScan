@@ -62,19 +62,8 @@ void processThread(std::atomic<int>* flags, void * data)
 		for (int i = 0; i < dpacket.data_size; i++)
 		{
 			long long local_ns = ns - dt * (dpacket.data_size - i);
-			if (i == 0)
-			{
-				fprintf(f, "%d,%d,%lf,%s,%lf,%lld - %lld\n", dpser, i, dpacket.data[i],
-					Timer::timeStampToString(Timer::apiTimeSystemHRC_NanoToTimestamp(local_ns)).c_str(),
-					dt * i / 1000.0,
-					dt * dpacket.data_size / 1000000, dt * dpacket.data_size / 1000);
-			}
-			else
-			{
-				fprintf(f, "%d,%d,%lf,%s,%lf\n", dpser, i, dpacket.data[i],
-					Timer::timeStampToString(Timer::apiTimeSystemHRC_NanoToTimestamp(local_ns)).c_str(),
-					dt * i / 1000.0);
-			}
+			fprintf(f, "%d,%d,%d,%lf,%s\n", dpser, i, 1000 * dpser + i, dpacket.data[i],
+				Timer::timeStampToString(Timer::apiTimeSystemHRC_NanoToTimestamp(local_ns)).c_str());
 		}
 		dpser++;
 

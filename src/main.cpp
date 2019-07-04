@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 	std::cout << "Program started... " << std::endl << "Current time - " << ts.year << "/" << ts.month << "/" << ts.day << " " << ts.hour << ":" << ts.min << ":" << ts.sec << ":" << ts.millis << ":" << ts.micros << ":" << ts.nanos << std::endl;
 	std::cout << "Main thread [0x" << std::hex << std::this_thread::get_id() << "] started." << std::endl;
 
-	IO::createIniFile("config\\default.ini");
+	//IO::createIniFile("config\\default.ini");
 	IO::IniFileData data = IO::readIniFile("config\\default.ini");
 
 	AcquireDataOptions doptions;

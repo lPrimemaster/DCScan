@@ -54,14 +54,14 @@ void processThread(std::atomic<int>* flags, void * data)
 		CallbackPacket::getGlobalCBPMutex()->unlock();
 
 		//Process the data
-		static long long dt = 1000000000 / opt->tproperties.timer.sampleRate; //In nanoseconds
+		static long long dt = (int)(1000000000 / opt->tproperties.timer.sampleRate); //In nanoseconds [Truncated]
 		static int dpser = 0;
 
 		long long ns = dpacket.software_tor_ns;
 
 		for (int i = 0; i < dpacket.data_size; i++)
 		{
-			long long local_ns = ns - dt * (dpacket.data_size - i);
+			long long local_ns = ns - dt * (dpacket.data_size - (size_t)i);
 			if (i == 0)
 			{
 				fprintf(f, "%d,%d,%lf,%s,%lf,%lld - %lld\n", dpser, i, dpacket.data[i],

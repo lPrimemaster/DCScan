@@ -12,11 +12,11 @@ struct Timestamp
 	int month = 0;
 	int day = 0;
 	int hour = 0;
-	int min = 0;
-	int sec = 0;
-	int millis = 0;
-	int micros = 0;
-	int nanos = 0;
+	long long min = 0;
+	long long sec = 0;
+	long long millis = 0;
+	long long micros = 0;
+	long long nanos = 0;
 };
 
 class Timer

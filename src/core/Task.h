@@ -31,7 +31,7 @@ struct TaskProperties
 		float64 sampleRate;
 		int32 activeEdge;
 		int32 sampleMode;
-		uInt64 samplesPerChannel;
+		uInt32 samplesPerChannel;
 	}timer;
 };
 

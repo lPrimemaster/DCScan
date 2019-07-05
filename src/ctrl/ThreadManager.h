@@ -21,6 +21,7 @@ public:
 	ThreadManager();
 	~ThreadManager();
 
+#error profiler tells this std::func takes to much of cpu time, take back to raw pointer
 	std::thread::id addThread(std::function<void(std::atomic<int>*, void*) > threadFunction, void* threadData);
 	bool joinThreadSync(std::thread::id threadId);
 	bool joinThreadAsync(std::thread::id threadId);

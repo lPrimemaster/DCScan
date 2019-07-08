@@ -93,21 +93,31 @@ bool SerialCom::loadConfig(IO::IniFileData data)
 	{
 		auto str = data["ControlSettings"][mc[0]];
 		auto value = IO::convertBracketValue<std::string>(str);
-#error fix -> convertBracketValue()
-		for (int i = 0; i < 3; i++)
+
+		//This is hardcoded for three engines only .. For the ESP-301 controller only
+		if(value.size() == 3)
 		{
-			issueCommand(mc[1], i, value.at(i));
+			issueCommand(mc[1], 0, value.at(0));
+			issueCommand(mc[1], 1, value.at(1));
+			issueCommand(mc[1], 2, value.at(2));
+		}
+		else //Copy the same value for all axes
+		{
+			issueCommand(mc[1], 0, value.at(0));
+			issueCommand(mc[1], 1, value.at(0));
+			issueCommand(mc[1], 2, value.at(0));
 		}
 
 		executeCommand();
+
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
-		for (int i = 0; i < 3; i++)
+		/*for (int i = 0; i < 3; i++)
 		{
-			/*issueCommand(mc.second, i, "?");
-			executeCommand();*/
-			//fprintf(stderr, "Read config %s = %s\n", mc.second.c_str(), getResponse().c_str());
-		}
+			issueCommand(mc.second, i, "?");
+			executeCommand();
+			fprintf(stderr, "Read config %s = %s\n", mc.second.c_str(), getResponse().c_str());
+		}*/
 	}
 	return true;
 }

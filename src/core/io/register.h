@@ -93,99 +93,114 @@ namespace IO
 	inline std::vector<T> convertBracketValue(const std::string& str);
 
 
-	template<>
+	template<> //Does not skip with no bracket
 	inline std::vector<float> convertBracketValue(const std::string& str)
 	{
 		std::vector<float> out;
 		std::string::const_iterator it = str.begin();
-		if (*it++ != '{')
+		if (*it != '{')
 		{
-			out.push_back(atof(str.c_str()));
-			return out;
+			//error
 		}
 		else
 		{
-			while (*it != '}')
+			char buffer[32] = { 0 };
+			int i = 0;
+			while (++it != str.end())
 			{
-				while (*it == ' ') it++;
-				//Break in substrings with commas, also, dispose of the brackets and spaces
-				char buffer[32] = { 0 };
-				int i = 0;
-				while (*it != ',')
+				if (*it == ' ')
 				{
-					if(*it != ' ')
-						buffer[i++] = *it++;
-					it++;
+					continue;
 				}
-				out.push_back(atof(buffer));
+				else if(*it != ',' && *it != '}')
+				{
+					buffer[i++] = *it;
+				}
+				else
+				{
+					out.push_back(atof(buffer));
+					memset(buffer, 0, 32);
+					i = 0;
+				}
 			}
 			return out;
 		}
 	}
 
-	template<>
+	template<> //Does not skip with no bracket
 	inline std::vector<int> convertBracketValue(const std::string& str)
 	{
 		std::vector<int> out;
 		std::string::const_iterator it = str.begin();
-		if (*it++ != '{')
+		bool hex = false;
+		if (*it != '{')
 		{
-			out.push_back(atoi(str.c_str()));
-			return out;
+			//error
 		}
 		else
 		{
-			while (*it != '}')
+			char buffer[32] = { 0 };
+			int i = 0;
+			while (++it != str.end())
 			{
-				while (*it == ' ') it++;
-				//Break in substrings with commas, also, dispose of the brackets and spaces
-				char buffer[32] = { 0 };
-				int i = 0;
-				while (*it != ',')
+				if (*it == ' ')
 				{
-					if (*it != ' ')
-						buffer[i++] = *it++;
-					it++;
+					continue;
 				}
-				out.push_back(atoi(buffer));
+				else if (*it != ',' && *it != '}')
+				{
+					if (*it == 'H')
+					{
+						hex = true;
+					}
+					else
+					{
+						buffer[i++] = *it;
+					}
+				}
+				else
+				{
+					out.push_back(strtol(buffer, NULL, hex ? 16 : 10));
+					memset(buffer, 0, 32);
+					hex = false;
+					i = 0;
+				}
 			}
 			return out;
 		}
 	}
 
-	template<>
+	template<> //Skips with no bracket
 	inline std::vector<std::string> convertBracketValue(const std::string& str)
 	{
 		std::vector<std::string> out;
 		std::string::const_iterator it = str.begin();
-		if (*it++ != '{')
+		if (*it != '{')
 		{
-			out.push_back(str); out.push_back(str); out.push_back(str);
+			//No bracket, keep value
+			out.push_back(str);
 			return out;
 		}
 		else
 		{
-			while (*it != '}')
+			char buffer[32] = { 0 };
+			int i = 0;
+			while (++it != str.end())
 			{
-				while (*it == ' ') it++;
-				//Break in substrings with commas, also, dispose of the brackets and spaces
-				char buffer[32] = { 0 };
-				int i = 0;
-				while (*it != ',')
+				if (*it == ' ')
 				{
-					if (*it == '}')
-						break;
-					else if (*it != ' ' && *it != '{')
-						buffer[i++] = *it++;
-					else
-					{
-						it++;
-					}
+					continue;
 				}
-
-				buffer[i] = '\0';
-
-				out.push_back(buffer);
+				else if (*it != ',' && *it != '}')
+				{
+					buffer[i++] = *it;
+				}
+				else
+				{
+					out.push_back(buffer);
+					memset(buffer, 0, 32);
+					i = 0;
+				}
 			}
 			return out;
 		}

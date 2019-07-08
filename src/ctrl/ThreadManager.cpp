@@ -6,13 +6,13 @@
 #include <Windows.h>
 #endif
 
-ThreadManager::ThreadManager()
-{
-	pool_used = new bool[THREAD_CONCURRENCY];
-	for (int i = 0; i < THREAD_CONCURRENCY; i++) pool_used[i] = false;
+bool* ThreadManager::pool_used = nullptr;
+std::atomic<int> ThreadManager::deinit = 0;
+std::unordered_map<std::thread::id, unsigned> ThreadManager::pool_pos;
 
-#ifdef _WIN32
-	//HANDLE hConsole_c = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+//Thread for looking at status without notifications
+void threadHelpTip(std::atomic_int* at, void* data)
+{
 	HANDLE hConsole_c = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleActiveScreenBuffer(hConsole_c);
 
@@ -23,79 +23,75 @@ ThreadManager::ThreadManager()
 	columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
 	rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 
-#endif
+	const int y = rows - 1;
+	const char* str[2] = { "> IDLE   ", "> RUNNING" };
 
-	//Thread for looking at status without notifications
-	auto lf = [=] (std::atomic_int*, void*) -> void
+	//This thread does not respond to the THREAD_HALT flag
+	while (ThreadManager::deinit.load() != 1)
 	{
-#ifdef _WIN32
-		const int y = rows - 1;
-		const char *str[2] = { "> IDLE   ", "> RUNNING" };
-#endif
-
-		//This thread does not respond to the THREAD_HALT flag
-		while (deinit.load() != 1)
+		for (int i = 0; i < THREAD_CONCURRENCY; i++)
 		{
-#ifdef _WIN32
-			for (int i = 0; i < THREAD_CONCURRENCY; i++)
-			{
-				long ri = pool_used[i] ? 1 : 0;
-				COORD pos = { 0, y - i };
-				DWORD len = strlen(str[ri]);
-				DWORD dwBytesWritten = 0;
-				WriteConsoleOutputCharacter(hConsole_c, str[ri], len, pos, &dwBytesWritten);
-				//CFlush::FlushConsoleString();
-#endif
-			}
-			for (int i = 0; i < THREAD_CONCURRENCY; i++)
-			{
-				if (!pool_used[i])
-				{
-					continue;
-				}
-				else
-				{
-					//Skip first letters of running text indicator (columns)
-					char stch[50] = "- Thread #";
-					strcat_s(stch, std::to_string(i).c_str());
-					strcat_s(stch, " - ID: ");
-					auto it = pool_pos.begin();
-					for (int z = 0; z < THREAD_CONCURRENCY; z++)
-					{
-						bool end = it == pool_pos.end();
-
-						if (!pool_pos.empty() && it->second == i) //Fix thread concurrency here - Prime @Todo
-						{
-							std::stringstream ss;
-							ss << "0x" << std::hex << it->first;
-							strcat_s(stch, ss.str().c_str());
-							break;
-						}
-						if (!end)
-						{
-							it++;
-						}
-						else
-						{
-							break;
-						}
-					}
-
-					COORD pos = { 11, y - i };
-					DWORD len = strlen(stch);
-					DWORD dwBytesWritten = 0;
-					WriteConsoleOutputCharacter(hConsole_c, stch, len, pos, &dwBytesWritten);
-				}
-			}
-			//Prevent this gui from showing up too fast
-			std::this_thread::sleep_for(std::chrono::milliseconds(100));
-			CFlush::ClearConsole(y - THREAD_CONCURRENCY, THREAD_CONCURRENCY + 1);
+			long ri = ThreadManager::pool_used[i] ? 1 : 0;
+			COORD pos = { 0, y - i };
+			DWORD len = strlen(str[ri]);
+			DWORD dwBytesWritten = 0;
+			WriteConsoleOutputCharacter(hConsole_c, str[ri], len, pos, &dwBytesWritten);
+			//CFlush::FlushConsoleString();
 		}
-		//Flag ending
-		deinit.store(2);
-	};
+		for (int i = 0; i < THREAD_CONCURRENCY; i++)
+		{
+			if (!ThreadManager::pool_used[i])
+			{
+				continue;
+			}
+			else
+			{
+				//Skip first letters of running text indicator (columns)
+				char stch[50] = "- Thread #";
+				strcat_s(stch, std::to_string(i).c_str());
+				strcat_s(stch, " - ID: ");
+				auto it = ThreadManager::pool_pos.begin();
+				for (int z = 0; z < THREAD_CONCURRENCY; z++)
+				{
+					bool end = it == ThreadManager::pool_pos.end();
 
-	std::thread::id id = addThread(lf, nullptr);
+					if (!ThreadManager::pool_pos.empty() && it->second == i) //Fix thread concurrency here - Prime @Todo
+					{
+						std::stringstream ss;
+						ss << "0x" << std::hex << it->first;
+						strcat_s(stch, ss.str().c_str());
+						break;
+					}
+					if (!end)
+					{
+						it++;
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				COORD pos = { 11, y - i };
+				DWORD len = strlen(stch);
+				DWORD dwBytesWritten = 0;
+				WriteConsoleOutputCharacter(hConsole_c, stch, len, pos, &dwBytesWritten);
+			}
+		}
+		//Prevent this gui from showing up too fast
+		std::this_thread::sleep_for(std::chrono::milliseconds(200));
+		CFlush::ClearConsole(y - THREAD_CONCURRENCY, THREAD_CONCURRENCY + 1);
+	}
+	//Flag ending
+	ThreadManager::deinit.store(2);
+};
+
+ThreadManager::ThreadManager()
+{
+	ThreadManager::pool_used = new bool[THREAD_CONCURRENCY];
+	for (int i = 0; i < THREAD_CONCURRENCY; i++) ThreadManager::pool_used[i] = false;
+
+	std::thread::id id = addThread(threadHelpTip, nullptr);
 	//Detach this thread, as it should not be available to the pool
 	joinThreadAsync(id);
 }
@@ -132,7 +128,7 @@ ThreadManager::~ThreadManager()
 	delete[] pool_used;
 }
 
-std::thread::id ThreadManager::addThread(std::function<void(std::atomic<int>*, void*)> threadFunction, void* threadData)
+std::thread::id ThreadManager::addThread(Tfunc threadFunction, void* threadData)
 {
 	std::thread * thread;
 	/* Init a thread with the running status */

@@ -2,7 +2,6 @@
 #include <iostream>
 #include <thread>
 #include <unordered_map>
-#include <functional>
 #include <atomic>
 
 #include "../core/base/common.h"
@@ -14,15 +13,18 @@
 
 const unsigned int THREAD_CONCURRENCY = std::thread::hardware_concurrency();
 
+//Function raw pointer preset to avoid <functional>
+typedef void (*Tfunc)(std::atomic<int>*, void*);
+
 //Threads should only be created from the main (or a single) thread! This class is not thread-safe!
 class ThreadManager
 {
 public:
+	friend void threadHelpTip(std::atomic_int* at, void* data);
 	ThreadManager();
 	~ThreadManager();
 
-#error profiler tells this std::func takes to much of cpu time, take back to raw pointer
-	std::thread::id addThread(std::function<void(std::atomic<int>*, void*) > threadFunction, void* threadData);
+	std::thread::id addThread(Tfunc threadFunction, void* threadData);
 	bool joinThreadSync(std::thread::id threadId);
 	bool joinThreadAsync(std::thread::id threadId);
 
@@ -34,10 +36,9 @@ public:
 private:
 	std::unordered_map<std::thread::id, std::thread*> obj;
 	std::unordered_map<std::thread::id, std::atomic<int>*> flags;
-	std::unordered_map<std::thread::id, unsigned> pool_pos;
 
-	bool * pool_used;
-
-	std::atomic<int> deinit = 0;
+	static std::unordered_map<std::thread::id, unsigned> pool_pos;
+	static bool * pool_used;
+	static std::atomic<int> deinit;
 };
 

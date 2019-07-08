@@ -32,6 +32,7 @@ namespace IO
 			if a == b == c == val use only val */
 		/* These values are just references and need to be edited to be usefull */
 		/* Some of these values need to be replaced by bracket triplets for all motors */
+		/* Default values configured acording with 'esp301_config.txt' configurations */
 
 		WritePrivateProfileString("ControlSettings", "motor_types", "3", path);
 		WritePrivateProfileString("ControlSettings", "measure_units", "7", path);
@@ -142,7 +143,8 @@ namespace IO
 
 	bool valueHasBracket(const std::string & str)
 	{
-		if(str.find(' ') == std::string::npos)
+		//Only valid bracket is first char before any valid char / however this is not checked hgere
+		if(str.find_first_of('{') != std::string::npos)
 			return false;
 		return true;
 	}

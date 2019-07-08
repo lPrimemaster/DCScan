@@ -20,7 +20,7 @@ int ScrollByAbsoluteCoord(int iRows);
 //Scroll console relative
 int ScrollByRelativeCoord(int iRows);
 
-//intpointer converter
+//int pointer converter
 template<typename T>
 inline std::vector<intptr_t> convertToIntPointerH(T first)
 {
@@ -42,7 +42,15 @@ inline intptr_t* convertToIntPointer(T first, Args... args)
 {
 	std::vector<intptr_t> ret = convertToIntPointerH(first, args...);
 	std::reverse(ret.begin(), ret.end());
-	return ret.data();
+
+	intptr_t* out = new intptr_t[ret.size()];
+
+	for (int i = 0; i < ret.size(); i++)
+	{
+		out[i] = ret[i];
+	}
+
+	return out;
 }
 
 inline std::string tostring_prec(const float value, const int precision = 4)

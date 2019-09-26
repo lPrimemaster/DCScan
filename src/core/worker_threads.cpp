@@ -5,8 +5,6 @@
 
 void acquireThread(std::atomic<int>* flags, void * data)
 {
-	std::cout << "Acquiring thread [0x" << std::hex << std::this_thread::get_id() << "] started." << std::endl;
-
 	AcquireDataOptions * ado = reinterpret_cast<AcquireDataOptions*>(data);
 
 	Task task(ado->tproperties.name);
@@ -27,8 +25,6 @@ void acquireThread(std::atomic<int>* flags, void * data)
 
 void processThread(std::atomic<int>* flags, void * data)
 {
-	std::cout << "Processing thread [0x" << std::hex << std::this_thread::get_id() << "] started." << std::endl;
-
 	intptr_t* int_ptr = reinterpret_cast<intptr_t*>(data);
 
 	FILE* f = reinterpret_cast<FILE*>(int_ptr[0]);
@@ -77,5 +73,5 @@ void processThread(std::atomic<int>* flags, void * data)
 
 void controlThread(std::atomic<int>* flags, void* data)
 {
-	std::cout << "Control thread [0x" << std::hex << std::this_thread::get_id() << "] started." << std::endl;
+	//TODO
 }

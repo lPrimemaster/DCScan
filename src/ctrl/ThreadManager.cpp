@@ -13,74 +13,42 @@ std::unordered_map<std::thread::id, unsigned> ThreadManager::pool_pos;
 //Thread for looking at status without notifications
 void threadHelpTip(std::atomic_int* at, void* data)
 {
-	HANDLE hConsole_c = GetStdHandle(STD_OUTPUT_HANDLE);
-	SetConsoleActiveScreenBuffer(hConsole_c);
-
-	//Assuming the console size wont be changed
-	CONSOLE_SCREEN_BUFFER_INFO csbi;
-	int columns, rows;
-	GetConsoleScreenBufferInfo(hConsole_c, &csbi);
-	columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-	rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-
-	const int y = rows - 1;
-	const char* str[2] = { "> IDLE   ", "> RUNNING" };
+	const int y = CFlush::rows - 1;
 
 	//This thread does not respond to the THREAD_HALT flag
 	while (ThreadManager::deinit.load() != 1)
 	{
 		for (int i = 0; i < THREAD_CONCURRENCY; i++)
 		{
-			long ri = ThreadManager::pool_used[i] ? 1 : 0;
-			COORD pos = { 0, y - i };
-			DWORD len = strlen(str[ri]);
-			DWORD dwBytesWritten = 0;
-			WriteConsoleOutputCharacter(hConsole_c, str[ri], len, pos, &dwBytesWritten);
-			//CFlush::FlushConsoleString();
-		}
-		for (int i = 0; i < THREAD_CONCURRENCY; i++)
-		{
 			if (!ThreadManager::pool_used[i])
 			{
-				continue;
+				CFlush::printXYColor(CFlush::TEXT_GRAY, { 0,  (SHORT)(y - i)},  "Thread #%d", i);
+				CFlush::printXYColor(CFlush::TEXT_RED,  { 12, (SHORT)(y - i) }, " < IDLE    ");
+				CFlush::printXYColor(CFlush::TEXT_RED,  { 26, (SHORT)(y - i) }, "                               ");
 			}
 			else
 			{
-				//Skip first letters of running text indicator (columns)
-				char stch[50] = "- Thread #";
-				strcat_s(stch, std::to_string(i).c_str());
-				strcat_s(stch, " - ID: ");
+				CFlush::printXYColor(CFlush::TEXT_GRAY,  { 0,  (SHORT)(y - i) }, "Thread #%d", i);
+				CFlush::printXYColor(CFlush::TEXT_GREEN, { 12, (SHORT)(y - i) }, " < RUNNING ");
+				
 				auto it = ThreadManager::pool_pos.begin();
-				for (int z = 0; z < THREAD_CONCURRENCY; z++)
+
+				while (!(!ThreadManager::pool_pos.empty() && it->second == i) && !(it == ThreadManager::pool_pos.end())) 
 				{
-					bool end = it == ThreadManager::pool_pos.end();
-
-					if (!ThreadManager::pool_pos.empty() && it->second == i) //Fix thread concurrency here - Prime @Todo
-					{
-						std::stringstream ss;
-						ss << "0x" << std::hex << it->first;
-						strcat_s(stch, ss.str().c_str());
-						break;
-					}
-					if (!end)
-					{
-						it++;
-					}
-					else
-					{
-						break;
-					}
+					it++;
 				}
-
-				COORD pos = { 11, y - i };
-				DWORD len = strlen(stch);
-				DWORD dwBytesWritten = 0;
-				WriteConsoleOutputCharacter(hConsole_c, stch, len, pos, &dwBytesWritten);
+				if (it != ThreadManager::pool_pos.end())
+				{
+					std::stringstream ss;
+					ss << it->first;
+					//CFlush::printXYColor(CFlush::TEXT_GRAY, { 25, (SHORT)(y - i) }, " [%s] ", CFlush::formatString("%#06X", id));
+					CFlush::printXYColor(CFlush::TEXT_GRAY, { 25, (SHORT)(y - i) }, " [ID: %s] ", ss.str().c_str());
+				}
 			}
 		}
+
 		//Prevent this gui from showing up too fast
 		std::this_thread::sleep_for(std::chrono::milliseconds(200));
-		CFlush::ClearConsole(y - THREAD_CONCURRENCY, THREAD_CONCURRENCY + 1);
 	}
 	//Flag ending
 	ThreadManager::deinit.store(2);
@@ -108,13 +76,13 @@ ThreadManager::~ThreadManager()
 			flags[o.first]->store(THREAD_HALT);
 			o.second->join();
 			delete o.second;
-			std::cerr << "Thread 0x" << std::hex << o.first << " is joining this thread [0x" << std::hex << std::this_thread::get_id() << "]. Waiting" << std::endl;
+			std::cerr << "Thread 0x" << std::hex << std::uppercase << o.first << std::nouppercase << " is joining this thread [0x" << std::hex << std::uppercase << std::this_thread::get_id() << std::nouppercase << std::dec << "]. Waiting..." << std::endl;
 		}
 		else
 		{
 			flags[o.first]->store(THREAD_HALT);
 			o.second->detach();
-			std::cerr << "Thread 0x" << std::hex << o.first << " is not joinable. Halting and detaching" << std::endl;
+			std::cerr << "Thread 0x" << std::hex << std::uppercase << o.first << std::nouppercase << " is not joinable. Halting and detaching." << std::dec << std::endl;
 		}
 		delete flags[o.first];
 	}
@@ -140,6 +108,8 @@ std::thread::id ThreadManager::addThread(Tfunc threadFunction, void* threadData)
 
 	std::thread::id id = thread->get_id();
 
+	std::cout << "Thread 0x" << std::hex << std::uppercase << id << std::nouppercase << " started." << std::dec << std::endl;
+
 	obj.emplace(id, thread);
 	flags.emplace(id, flag);
 
@@ -160,7 +130,7 @@ bool ThreadManager::joinThreadSync(std::thread::id threadId)
 		flags[threadId]->store(THREAD_HALT);
 		obj[threadId]->join();
 
-		std::cerr << "Thread 0x" << std::hex << threadId << " joined successfully" << std::endl;
+		std::cerr << "Thread 0x" << std::hex << std::uppercase << threadId << std::nouppercase << " joined successfully." << std::dec << std::endl;
 
 		delete flags[threadId];
 		delete obj[threadId];
@@ -174,7 +144,7 @@ bool ThreadManager::joinThreadSync(std::thread::id threadId)
 		return true;
 	}
 
-	std::cerr << "Thread 0x" << std::hex << threadId << " is not joinable. Ignoring" << std::endl;
+	std::cerr << "Thread 0x" << std::hex << std::uppercase << threadId << std::nouppercase << " is not joinable. Ignoring." << std::dec << std::endl;
 	return false;
 }
 
@@ -183,7 +153,7 @@ bool ThreadManager::joinThreadAsync(std::thread::id threadId)
 	flags[threadId]->store(THREAD_HALT);
 	obj[threadId]->detach();
 
-	std::cerr << "Thread 0x" << std::hex << threadId << " is being detached" << std::endl;
+	std::cerr << "Thread 0x" << std::hex << std::uppercase << threadId << std::nouppercase << " is being detached." << std::dec << std::endl;
 
 	delete flags[threadId];
 	if (obj[threadId] != nullptr)
@@ -207,7 +177,7 @@ bool ThreadManager::signalThreadSetStatus(std::thread::id threadId, int status)
 {
 	if (status == THREAD_HALT)
 	{
-		std::cerr << "Thread 0x" << std::hex << threadId << " cannot be halted from this method. Refer to joinThread{Sync,Async} methods" << std::endl;
+		std::cerr << "Thread 0x" << std::hex << std::uppercase << threadId << std::nouppercase << " cannot be halted from this method. Refer to joinThread{Sync,Async} methods." << std::dec << std::endl;
 		return false;
 	}
 	flags[threadId]->store(status);

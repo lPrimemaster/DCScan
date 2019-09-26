@@ -8,35 +8,46 @@
 #include <Windows.h>
 #endif
 
+
 //This class supports async console flush (even for multiple instances of class) -- default handle = STD_OUTPUT_HANDLE
 class CFlush
 {
 public:
-	static void InitHandle(DWORD hnd);
-	static void InitHandle();
-	static void CloseHandle();
+	enum Color
+	{
+		TEXT_WHITE = FOREGROUND_RED   | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY,
+		TEXT_RED   = FOREGROUND_RED   | FOREGROUND_INTENSITY,
+		TEXT_GREEN = FOREGROUND_GREEN | FOREGROUND_INTENSITY,
+		TEXT_BLUE  = FOREGROUND_BLUE  | FOREGROUND_INTENSITY,
+		TEXT_GRAY  = FOREGROUND_RED   | FOREGROUND_GREEN | FOREGROUND_BLUE,
+	};
 
-	static void FlushConsoleStream(std::stringstream * ss);
-	static void FlushConsoleString(std::string& str);
-	static void FlushConsoleCharLP(const char* buffer);
-	static void ClearConsole(SHORT y, SHORT w);
+	friend static void custom_printf(WORD att, COORD coord, const char* fmt, va_list arg);
+	static bool Init();
+	static bool println(int line, const char* fmt, ...);
+	static bool printlnColor(Color c, int line, const char* fmt, ...);
+	static bool printXY(COORD xy, const char* fmt, ...);
+	static bool printXYColor(Color c, COORD xy, const char* fmt, ...);
+
+
+	static std::string formatString(const char* fmt, ...);
+
+	static HANDLE getDefaultHandle();
 
 public:
-	static int rows;
-	static int columns;
+	static SHORT columns;
+	static SHORT rows;
 
 private:
 	CFlush() = default;
 	~CFlush() = default;
 
-	static std::vector<std::string> str_split(const std::string &str, char ch);
+	static bool writeCharAttrib(HANDLE hnd, LPCSTR str, DWORD size, COORD location, WORD color);
+	static bool printPos(WORD att, COORD pos, const char* fmt, va_list arg);
 
-private:
-	static std::mutex gm;
-	static HANDLE hConsole_c;
+	//Prints everything in a specific line - no color
 
-	static CONSOLE_SCREEN_BUFFER_INFO csbi;
+	static HANDLE handle[2];
 
-	static const unsigned int THREAD_CONCURRENCY;
 };
 

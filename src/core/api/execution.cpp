@@ -18,7 +18,7 @@
 int executeDefault(DCScan_Context* acquisition)
 {
 	//Initialize default windows handle for operation
-	CFlush::InitHandle();
+	//CFlush::InitHandle();
 
 	//Redirect cerr to file
 	std::ofstream filebuffer("logs/" + GET_VERSION_STR() + ".log");
@@ -77,7 +77,7 @@ int executeDefault(DCScan_Context* acquisition)
 	auto tid_0 = manager.addThread(acquireThread, &doptions);
 	auto tid_1 = manager.addThread(processThread, convertToIntPointer(f, &doptions));
 
-	CFlush::FlushConsoleStream(&outbuffer);
+	//CFlush::FlushConsoleStream(&outbuffer);
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
@@ -86,16 +86,16 @@ int executeDefault(DCScan_Context* acquisition)
 
 	fclose(f);
 
-	CFlush::ClearConsole(0, CFlush::rows - THREAD_CONCURRENCY);
-	CFlush::FlushConsoleStream(&outbuffer);
+	//CFlush::ClearConsole(0, CFlush::rows - THREAD_CONCURRENCY);
+	//CFlush::FlushConsoleStream(&outbuffer);
 
 	//Always revert the .ini file to default for safety purposes and test only
 	IO::createIniFile("config\\default.ini");
 
-	CFlush::FlushConsoleStream(&outbuffer);
+	//CFlush::FlushConsoleStream(&outbuffer);
 
 	//Close the handle only when all user threads stopped
-	CFlush::CloseHandle();
+	//CFlush::CloseHandle();
 
 	return 0;
 }

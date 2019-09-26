@@ -1,133 +1,228 @@
 #include "CFlush.h"
+#include <ios>
+#include <io.h>
+#include <fcntl.h>
+#include <fstream>
 
-const unsigned int CFlush::THREAD_CONCURRENCY = std::thread::hardware_concurrency();
-std::mutex CFlush::gm;
-HANDLE CFlush::hConsole_c;
+HANDLE CFlush::handle[2] = { nullptr };
+SHORT CFlush::columns = 0;
+SHORT CFlush::rows = 0;
 
-int CFlush::rows = 0;
-int CFlush::columns = 0;
-
-CONSOLE_SCREEN_BUFFER_INFO CFlush::csbi;
-
-std::vector<std::string> CFlush::str_split(const std::string &str, char ch)
+static char* convert(unsigned int num, int base)
 {
-	size_t pos = str.find(ch);
-	size_t initialPos = 0;
+	static char Representation[] = "0123456789ABCDEF";
+	static char buffer[50];
+	char* ptr;
 
-	std::vector<std::string> rval;
+	ptr = &buffer[49];
+	*ptr = '\0';
 
-	//Decompose
-	while (pos != std::string::npos)
+	do
 	{
-		rval.push_back(str.substr(initialPos, pos - initialPos));
-		initialPos = pos + 1;
-		pos = str.find(ch, initialPos);
-	}
+		*--ptr = Representation[num % base];
+		num /= base;
+	} while (num != 0);
 
-	///This is wrong for the case of '\n' char... unless ....
-	//Add the last -- And prevent min from windef.h with parenthesis
-	//rval.push_back(str.substr(initialPos, (std::min)(pos, str.size()) - initialPos + 1));
-
-	return rval;
+	return(ptr);
 }
 
-void CFlush::InitHandle(DWORD hnd)
+//Sampled from : http://www.firmcodes.com/write-printf-function-c/
+static void custom_printf(WORD att, COORD coord, const char* fmt, va_list arg)
 {
-	hConsole_c = GetStdHandle(hnd);
+	char* traverse;
+	unsigned int i;
+	int a;
+	char* s;
+	COORD where = coord;
 
-	//Assuming the console size can't be changed
-	GetConsoleScreenBufferInfo(hConsole_c, &csbi);
+	auto fastwc = [&](const char* c, DWORD size, WORD color) -> void
+	{
+		for (int i = 0; i < size; i++)
+		{
+			CFlush::writeCharAttrib(CFlush::handle[0], c++, 1, where, color);
+			if (where.X++ > CFlush::columns)
+			{
+				where.X = 0;
+				where.Y++;
+			}
+		}
+	};
+
+	//1 - Init arguments
+	for (traverse = (char*)fmt; *traverse != '\0'; traverse++)
+	{
+		while (*traverse != '%')
+		{
+			if (*traverse == '\0')
+			{
+				return;
+			}
+			else if (*traverse == '\n')
+			{
+				where.X = 0;
+				where.Y++;
+				traverse++;
+			}
+
+			fastwc(traverse, 1, att);
+			traverse++;
+		}
+
+		traverse++;
+
+		//2 - fetch and exec args
+		switch (*traverse)
+		{
+		case 'c': i = va_arg(arg, int); //Fetch char argument
+			fastwc(std::to_string(i).c_str(), 1, att);
+			break;
+
+		case 'd': a = va_arg(arg, int); //Fetch Decimal/Integer argument
+			if (a < 0)
+			{
+				i = -a;
+				fastwc("-", 1, att);
+			}
+			else
+			{
+				i = a;
+			}
+			s = convert(i, 10);
+			fastwc(s, strlen(s), att);
+			break;
+
+		case 'o': i = va_arg(arg, unsigned int); //Fetch Octal representation
+			s = convert(i, 8);
+			fastwc(s, strlen(s), att);
+			break;
+
+		case 's': s = va_arg(arg, char*); 		 //Fetch string
+			fastwc(s, strlen(s), att);
+			break;
+
+		case 'x': i = va_arg(arg, unsigned int); //Fetch Hexadecimal representation
+			s = convert(i, 16);
+			fastwc(s, strlen(s), att);
+			break;
+		}
+
+	}
+}
+
+bool CFlush::Init()
+{
+	//One serves as a backbuffer as the other serves as the front one
+
+	handle[0] = CreateConsoleScreenBuffer(GENERIC_WRITE, NULL, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+	handle[1] = CreateConsoleScreenBuffer(GENERIC_WRITE, NULL, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+
+	//Assuming the console size won't be changed
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
 	columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
 	rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+
+	////Redirect std::ios and stdio to this handle[0]
+	//int hConHandle = _open_osfhandle((long)handle[0], _O_TEXT);
+	//FILE* fp = _fdopen(hConHandle, "t");
+	//*stdout = *fp;
+	//setvbuf(stdout, NULL, _IONBF, 0);
+
+	//std::ifstream stream(fp);
+	//std::cout.rdbuf(stream.rdbuf());
+
+	return handle[0] != nullptr;
 }
 
-void CFlush::InitHandle()
+bool CFlush::writeCharAttrib(HANDLE hnd, LPCSTR str, DWORD size, COORD location, WORD color)
 {
-	hConsole_c = GetStdHandle(STD_OUTPUT_HANDLE);
+	WORD att = color;
+	DWORD numberAttrbWritten = 0;
+	DWORD numberCharsWritten = 0;
 
-	//Assuming the console size can't be changed
-	GetConsoleScreenBufferInfo(hConsole_c, &csbi);
-	columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-	rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+	WriteConsoleOutputAttribute(hnd, &att, size, location, &numberAttrbWritten);
+	WriteConsoleOutputCharacter(hnd, str, size, location, &numberCharsWritten);
+
+	return numberAttrbWritten == numberCharsWritten;
 }
 
-void CFlush::CloseHandle()
+bool CFlush::println(int line, const char* fmt, ...)
 {
-	::CloseHandle(hConsole_c);
+	COORD pos = {0, line};
+	va_list arg;
+	va_start(arg, fmt);
+
+	printPos(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY, pos, fmt, arg);
+
+	va_end(arg);
+
+	return true;
 }
 
-void CFlush::FlushConsoleStream(std::stringstream * ss)
+bool CFlush::printlnColor(Color c, int line, const char* fmt, ...)
 {
-	std::string val = ss->str();
-	std::vector<std::string> split = str_split(val, '\n');
+	COORD pos = { 0, line };
+	va_list arg;
+	va_start(arg, fmt);
 
-	std::lock_guard<std::mutex> lock(gm);
+	printPos((WORD)c, pos, fmt, arg);
 
-	SetConsoleActiveScreenBuffer(hConsole_c);
+	va_end(arg);
 
-	for (int i = 0; i < split.size(); i++)
-	{
-		const char* buffer = split[i].c_str();
-		COORD pos = { 0, i < rows - THREAD_CONCURRENCY - 1 ? i : rows - THREAD_CONCURRENCY };
-		DWORD len = strlen(buffer);
-		DWORD dwBytesWritten = 0;
-		WriteConsoleOutputCharacter(hConsole_c, buffer, len, pos, &dwBytesWritten);
-	}
-	ss->clear();
+	return true;
 }
 
-void CFlush::FlushConsoleString(std::string & str)
+bool CFlush::printXY(COORD xy, const char* fmt, ...)
 {
-	std::vector<std::string> split = str_split(str, '\n');
+	va_list arg;
+	va_start(arg, fmt);
 
-	std::lock_guard<std::mutex> lock(gm);
+	printPos(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY, xy, fmt, arg);
 
-	SetConsoleActiveScreenBuffer(hConsole_c);
+	va_end(arg);
 
-	for (int i = 0; i < split.size(); i++)
-	{
-		const char* buffer = split[i].c_str();
-		COORD pos = { 0, i < rows - THREAD_CONCURRENCY - 1 ? i : rows - THREAD_CONCURRENCY };
-		DWORD len = strlen(buffer);
-		DWORD dwBytesWritten = 0;
-		WriteConsoleOutputCharacter(hConsole_c, buffer, len, pos, &dwBytesWritten);
-	}
+	return true;
 }
 
-void CFlush::FlushConsoleCharLP(const char * buffer)
+bool CFlush::printXYColor(Color c, COORD xy, const char* fmt, ...)
 {
-	std::string ex(buffer);
-	std::vector<std::string> split = str_split(ex, '\n');
+	va_list arg;
+	va_start(arg, fmt);
 
-	std::lock_guard<std::mutex> lock(gm);
+	printPos((WORD)c, xy, fmt, arg);
 
-	SetConsoleActiveScreenBuffer(hConsole_c);
+	va_end(arg);
 
-	//Assuming the console size can be changed
-	CONSOLE_SCREEN_BUFFER_INFO csbi;
-	GetConsoleScreenBufferInfo(hConsole_c, &csbi);
-	int columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-	int rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-
-	for (int i = 0; i < split.size(); i++)
-	{
-		const char* buffer = split[i].c_str();
-		COORD pos = { 0, i };
-		DWORD len = strlen(buffer);
-		DWORD dwBytesWritten = 0;
-		WriteConsoleOutputCharacter(hConsole_c, buffer, len, pos, &dwBytesWritten);
-	}
+	return true;
 }
 
-void CFlush::ClearConsole(SHORT y, SHORT w)
+bool CFlush::printPos(WORD att, COORD pos, const char* fmt, va_list arg)
 {
-	std::lock_guard<std::mutex> lock(gm);
 
-	//Assuming the console size can be changed
-	CONSOLE_SCREEN_BUFFER_INFO csbi;
-	GetConsoleScreenBufferInfo(hConsole_c, &csbi);
+	SetConsoleActiveScreenBuffer(handle[0]);
+	custom_printf(att, pos, fmt, arg);
 
-	DWORD dwBytesWrittenSC = 0;
-	FillConsoleOutputCharacter(hConsole_c, (TCHAR) ' ', csbi.dwSize.X * w,
-		COORD{ 0, y }, &dwBytesWrittenSC);
+	fflush(stdout);
+
+	return true;
+}
+
+std::string CFlush::formatString(const char* fmt, ...)
+{
+	char local_buff[4096];
+
+	va_list args;
+
+	va_start(args, fmt);
+
+	vsprintf_s(local_buff, fmt, args);
+
+	va_end(args);
+
+	return std::string(local_buff);
+}
+
+HANDLE CFlush::getDefaultHandle()
+{
+	return handle[0];
 }

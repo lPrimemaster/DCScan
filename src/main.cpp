@@ -28,7 +28,7 @@
 int main(int argc, char* argv[])
 {
 	//Initialize default windows handle for operation
-	CFlush::InitHandle();
+	CFlush::Init();
 
 	//Redirect cerr and stderr to file
 	FILE* nstderr = NULL;
@@ -43,8 +43,9 @@ int main(int argc, char* argv[])
 
 	Timestamp ts = Timer::apiTimeSystemHRC();
 
-	std::cout << "Program started... " << std::endl << "Current time - " << ts.year << "/" << ts.month << "/" << ts.day << " " << ts.hour << ":" << ts.min << ":" << ts.sec << ":" << ts.millis << ":" << ts.micros << ":" << ts.nanos << std::endl;
-	std::cout << "Main thread [0x" << std::hex << std::this_thread::get_id() << "] started." << std::endl;
+	CFlush::println(0, "Program started!");
+	CFlush::println(1, "Current Time: %s", CFlush::formatString("%02d:%02d:%02d", ts.hour, ts.min, ts.sec).c_str());
+	/*std::cout << "Main thread [0x" << std::hex << std::uppercase << std::this_thread::get_id() << std::nouppercase << "] started." << std::dec << std::endl;*/
 
 	//IO::createIniFile("config\\default.ini");
 	IO::IniFileData data = IO::readIniFile("config\\default.ini");
@@ -87,30 +88,38 @@ int main(int argc, char* argv[])
 
 	auto tid_0 = manager.addThread(acquireThread, &doptions);
 	auto tid_1 = manager.addThread(processThread, convertToIntPointer(f, &doptions));
-	//auto tid_2 = manager.addThread(controlThread, NULL);
+	auto tid_2 = manager.addThread(controlThread, convertToIntPointer(&data));
 
-	CFlush::FlushConsoleStream(&outbuffer);
+	//CFlush::FlushConsoleStream(&outbuffer);
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 
 	manager.joinThreadSync(tid_0);
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+
 	manager.joinThreadSync(tid_1);
-	//manager.joinThreadSync(tid_2);
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+
+	manager.joinThreadSync(tid_2);
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
 	fclose(f);
 
-	CFlush::FlushConsoleStream(&outbuffer);
+	//CFlush::FlushConsoleStream(&outbuffer);
 
-	std::cout << "Program uptime: " << Timer::apiUptimeString() << std::endl;
+	CFlush::println(2, "Program uptime: %s", Timer::apiUptimeString().c_str());
 
 	//CFlush::ClearConsole(0, CFlush::rows - THREAD_CONCURRENCY);
-	CFlush::FlushConsoleStream(&outbuffer);
+	//CFlush::FlushConsoleStream(&outbuffer);
 
 	//Always revert the .ini file to default for safety purposes and test only
 	IO::createIniFile("config\\default.ini");
 
 	//Close the handle only when all user threads stopped
-	CFlush::CloseHandle();
+	//CFlush::CloseHandle();
 
 	fclose(nstderr);
 

@@ -14,6 +14,8 @@
 
 #include "core/io/SerialCom.h"
 
+#include "ctrl/PerfCount.h" //Test only
+
 //Options for later work : César
 //Opt 1 - NI-DAQmx intrinsic handshaking for communication with engines
 //Opt 2 - Software timing / event for communication with engines
@@ -92,7 +94,14 @@ int main(int argc, char* argv[])
 
 	//CFlush::FlushConsoleStream(&outbuffer);
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+	PerfCount::PrintValidProcTimes();
+	PerfCount::Init();
+	//PerfCount::AddCounter(L"\\Process(DCScan)\\% Processor Time");
+	PerfCount::AddCounter(L"\\Processor(_Total)\\% Processor Time");
+
+	auto tid_3 = manager.addThread(PerfCount::Record, nullptr);
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(100000));
 
 	manager.joinThreadSync(tid_0);
 
@@ -105,6 +114,8 @@ int main(int argc, char* argv[])
 	manager.joinThreadSync(tid_2);
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+	manager.joinThreadSync(tid_3);
 
 	fclose(f);
 

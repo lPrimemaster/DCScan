@@ -79,13 +79,13 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>deps\DAQmx ANSI C Dev\include;deps\libcurl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_API_EXPORTING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_API_EXPORTING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>deps\DAQmx ANSI C Dev\lib\msvc;deps\libcurl;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>NIDAQmx.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>NIDAQmx.lib;pdh.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
@@ -114,12 +114,13 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>H:\NI\NI-DAQ\DAQmx ANSI C Dev\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_API_EXPORTING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>H:\NI\NI-DAQ\DAQmx ANSI C Dev\lib\msvc;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>NIDAQmx.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>NIDAQmx.lib;pdh.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -152,6 +153,7 @@
     <ClCompile Include="src\core\worker_callbacks.cpp" />
     <ClCompile Include="src\core\worker_threads.cpp" />
     <ClCompile Include="src\ctrl\CFlush.cpp" />
+    <ClCompile Include="src\ctrl\PerfCount.cpp" />
     <ClCompile Include="src\ctrl\ThreadManager.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\version.cpp" />
@@ -169,6 +171,7 @@
     <ClInclude Include="src\core\worker_callbacks.h" />
     <ClInclude Include="src\core\worker_threads.h" />
     <ClInclude Include="src\ctrl\CFlush.h" />
+    <ClInclude Include="src\ctrl\PerfCount.h" />
     <ClInclude Include="src\ctrl\ThreadManager.h" />
     <ClInclude Include="src\version.h" />
   </ItemGroup>

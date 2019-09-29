@@ -66,6 +66,9 @@
     <ClCompile Include="src\ctrl\PerfCount.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\ctrl\PyScript.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ctrl\ThreadManager.h">
@@ -111,6 +114,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ctrl\PerfCount.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ctrl\PyScript.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

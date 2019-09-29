@@ -10,6 +10,7 @@
 #define THREAD_RUN 1
 #define THREAD_SUSPEND 2
 #define THREAD_WAIT 3
+#define THREAD_ENDED 4
 
 const unsigned int THREAD_CONCURRENCY = std::thread::hardware_concurrency();
 

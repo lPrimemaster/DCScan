@@ -22,7 +22,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{9F9C6394-613C-499F-A3D1-196B3E34A299}</ProjectGuid>
     <RootNamespace>DCScan</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -78,18 +78,18 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>deps\DAQmx ANSI C Dev\include;deps\libcurl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>deps\DAQmx ANSI C Dev\include;deps\libcurl;C:\Users\César\AppData\Local\Programs\Python\Python37-32\include;$(PythonHome)Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_API_EXPORTING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>deps\DAQmx ANSI C Dev\lib\msvc;deps\libcurl;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>NIDAQmx.lib;pdh.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>deps\DAQmx ANSI C Dev\lib\msvc;deps\libcurl;C:\Users\César\AppData\Local\Programs\Python\Python37-32\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>NIDAQmx.lib;pdh.lib;libcurl.lib;python37.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>call "$(SolutionDir)DCScan\config\build_revision.bat" 2 0 $(ConfigurationName)</Command>
+      <Command>call "$(SolutionDir)config\build_revision.bat" 2 0 $(ConfigurationName)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -154,6 +154,7 @@
     <ClCompile Include="src\core\worker_threads.cpp" />
     <ClCompile Include="src\ctrl\CFlush.cpp" />
     <ClCompile Include="src\ctrl\PerfCount.cpp" />
+    <ClCompile Include="src\ctrl\PyScript.cpp" />
     <ClCompile Include="src\ctrl\ThreadManager.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\version.cpp" />
@@ -172,6 +173,7 @@
     <ClInclude Include="src\core\worker_threads.h" />
     <ClInclude Include="src\ctrl\CFlush.h" />
     <ClInclude Include="src\ctrl\PerfCount.h" />
+    <ClInclude Include="src\ctrl\PyScript.h" />
     <ClInclude Include="src\ctrl\ThreadManager.h" />
     <ClInclude Include="src\version.h" />
   </ItemGroup>

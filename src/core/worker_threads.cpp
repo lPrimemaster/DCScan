@@ -21,6 +21,8 @@ void acquireThread(std::atomic<int>* flags, void * data)
 	}
 
 	task.stop();
+
+	flags->store(THREAD_ENDED);
 }
 
 void processThread(std::atomic<int>* flags, void * data)
@@ -69,9 +71,13 @@ void processThread(std::atomic<int>* flags, void * data)
 			free(dpacket.data);
 		}
 	}
+
+	flags->store(THREAD_ENDED);
 }
 
 void controlThread(std::atomic<int>* flags, void* data)
 {
 	//TODO
+
+	flags->store(THREAD_ENDED);
 }

@@ -4,16 +4,16 @@ namespace IO
 {
 	void createIniFile(LPCTSTR name)
 	{
-		char path[64];
-		char fpath[64];
-		GetFullPathName(name, 64, path, NULL);
+		char path[128];
+		char fpath[128];
+		GetFullPathName(name, 128, path, NULL);
 
 		WritePrivateProfileString("Version", "major", GET_VERSION_MAJOR().c_str(), path);
 		WritePrivateProfileString("Version", "minor", GET_VERSION_MINOR().c_str(), path);
 
 		WritePrivateProfileString("IOLocation", "name", "data_out", path);
 		WritePrivateProfileString("IOLocation", "relative_path", "data", path);
-		GetFullPathName("data", 64, fpath, NULL);
+		GetFullPathName("data", 128, fpath, NULL);
 		WritePrivateProfileString("IOLocation", "absolute_path", fpath, path);
 		WritePrivateProfileString("IOLocation", "extension", "csv", path);
 
@@ -87,8 +87,8 @@ namespace IO
 
 	IniFileData readIniFile(LPCTSTR name)
 	{
-		char path[64];
-		GetFullPathName(name, 64, path, NULL);
+		char path[128];
+		GetFullPathName(name, 128, path, NULL);
 		IniFileProperties properties;
 
 		//128 bytes max string on ini file
@@ -117,8 +117,8 @@ namespace IO
 
 	IniFileData readCfgFile(LPCTSTR name)
 	{
-		char path[64];
-		GetFullPathName(name, 64, path, NULL);
+		char path[128];
+		GetFullPathName(name, 128, path, NULL);
 		IniFileProperties properties;
 
 		//64 bytes max string on cfg file

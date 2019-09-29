@@ -15,6 +15,8 @@ void threadHelpTip(std::atomic_int* at, void* data)
 {
 	const int y = CFlush::rows - 1;
 
+	ThreadManager* manager = (ThreadManager*)(data);
+
 	//This thread does not respond to the THREAD_HALT flag
 	while (ThreadManager::deinit.load() != 1)
 	{
@@ -39,10 +41,16 @@ void threadHelpTip(std::atomic_int* at, void* data)
 				}
 				if (it != ThreadManager::pool_pos.end())
 				{
+					if (manager->flags.at(it->first)->load() == THREAD_ENDED)
+					{
+						//This should be a callback - but impact is minimal...
+						manager->joinThreadSync(it->first);
+					}
+
 					std::stringstream ss;
 					ss << it->first;
 					//CFlush::printXYColor(CFlush::TEXT_GRAY, { 25, (SHORT)(y - i) }, " [%s] ", CFlush::formatString("%#06X", id));
-					CFlush::printXYColor(CFlush::TEXT_GRAY, { 25, (SHORT)(y - i) }, " [ID: %s] ", ss.str().c_str());
+					CFlush::printXYColor(CFlush::TEXT_GRAY, { 25, (SHORT)(y - i) }, " [ID: %s]                ", ss.str().c_str());
 				}
 			}
 		}
@@ -50,6 +58,30 @@ void threadHelpTip(std::atomic_int* at, void* data)
 		//Prevent this gui from showing up too fast
 		std::this_thread::sleep_for(std::chrono::milliseconds(200));
 	}
+
+	for (auto o : manager->obj)
+	{
+		if (o.second->joinable())
+		{
+			manager->flags[o.first]->store(THREAD_HALT);
+			o.second->join();
+			delete o.second;
+			std::cerr << "Thread 0x" << std::hex << std::uppercase << o.first << std::nouppercase << " is joining this thread [0x" << std::hex << std::uppercase << std::this_thread::get_id() << std::nouppercase << std::dec << "]. Waiting..." << std::endl;
+		}
+		else
+		{
+			manager->flags[o.first]->store(THREAD_HALT);
+			o.second->detach();
+			std::cerr << "Thread 0x" << std::hex << std::uppercase << o.first << std::nouppercase << " is not joinable. Halting and detaching." << std::dec << std::endl;
+		}
+		delete manager->flags[o.first];
+	}
+
+	manager->flags.clear();
+	manager->obj.clear();
+
+	delete[] manager->pool_used;
+
 	//Flag ending
 	ThreadManager::deinit.store(2);
 };
@@ -59,7 +91,9 @@ ThreadManager::ThreadManager()
 	ThreadManager::pool_used = new bool[THREAD_CONCURRENCY];
 	for (int i = 0; i < THREAD_CONCURRENCY; i++) ThreadManager::pool_used[i] = false;
 
-	std::thread::id id = addThread(threadHelpTip, nullptr);
+	std::cerr << "MAX_THREAD_CONCURRENCY = " << THREAD_CONCURRENCY << std::endl;
+
+	std::thread::id id = addThread(threadHelpTip, this);
 	//Detach this thread, as it should not be available to the pool
 	joinThreadAsync(id);
 }
@@ -69,31 +103,8 @@ ThreadManager::~ThreadManager()
 	//Signal manager thread to stop
 	deinit.store(1);
 
-	for (auto o : obj)
-	{
-		if (o.second->joinable())
-		{
-			flags[o.first]->store(THREAD_HALT);
-			o.second->join();
-			delete o.second;
-			std::cerr << "Thread 0x" << std::hex << std::uppercase << o.first << std::nouppercase << " is joining this thread [0x" << std::hex << std::uppercase << std::this_thread::get_id() << std::nouppercase << std::dec << "]. Waiting..." << std::endl;
-		}
-		else
-		{
-			flags[o.first]->store(THREAD_HALT);
-			o.second->detach();
-			std::cerr << "Thread 0x" << std::hex << std::uppercase << o.first << std::nouppercase << " is not joinable. Halting and detaching." << std::dec << std::endl;
-		}
-		delete flags[o.first];
-	}
-
-	flags.clear();
-	obj.clear();
-
-	//Wait for thread to end - to delete pool_used var
+	//Wait for thread to end - to proceed
 	while (deinit.load() != 2);
-
-	delete[] pool_used;
 }
 
 std::thread::id ThreadManager::addThread(Tfunc threadFunction, void* threadData)
@@ -108,7 +119,7 @@ std::thread::id ThreadManager::addThread(Tfunc threadFunction, void* threadData)
 
 	std::thread::id id = thread->get_id();
 
-	std::cout << "Thread 0x" << std::hex << std::uppercase << id << std::nouppercase << " started." << std::dec << std::endl;
+	std::cerr << "Thread 0x" << std::hex << std::uppercase << id << std::nouppercase << " started." << std::dec << std::endl;
 
 	obj.emplace(id, thread);
 	flags.emplace(id, flag);
@@ -125,6 +136,12 @@ std::thread::id ThreadManager::addThread(Tfunc threadFunction, void* threadData)
 
 bool ThreadManager::joinThreadSync(std::thread::id threadId)
 {
+	if (obj.find(threadId) == obj.end())
+	{
+		std::cerr << "Thread 0x" << std::hex << std::uppercase << threadId << std::nouppercase << " already joined. Ignoring." << std::dec << std::endl;
+		return false;
+	}
+
 	if (obj[threadId]->joinable())
 	{
 		flags[threadId]->store(THREAD_HALT);

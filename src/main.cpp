@@ -15,6 +15,7 @@
 #include "core/io/SerialCom.h"
 
 #include "ctrl/PerfCount.h" //Test only
+#include "ctrl/PyScript.h"  //Test only
 
 //Options for later work : César
 //Opt 1 - NI-DAQmx intrinsic handshaking for communication with engines
@@ -31,6 +32,11 @@ int main(int argc, char* argv[])
 {
 	//Initialize default windows handle for operation
 	CFlush::Init();
+
+	//PyScript::InitInterpreter();
+
+	PyScript script("realtime_test.py");
+
 
 	//Redirect cerr and stderr to file
 	FILE* nstderr = NULL;
@@ -88,20 +94,22 @@ int main(int argc, char* argv[])
 	//The following nomenclature is to be followed
 	//Convert all datatype pointers to intptr_t and then pass them to the required function or thread, unwrapping it later
 
+
 	auto tid_0 = manager.addThread(acquireThread, &doptions);
 	auto tid_1 = manager.addThread(processThread, convertToIntPointer(f, &doptions));
 	auto tid_2 = manager.addThread(controlThread, convertToIntPointer(&data));
+	auto tid_3 = manager.addThread(script.getRaw(), &script);
 
 	//CFlush::FlushConsoleStream(&outbuffer);
 
-	PerfCount::PrintValidProcTimes();
+	//PerfCount::PrintValidProcTimes();
 	PerfCount::Init();
 	//PerfCount::AddCounter(L"\\Process(DCScan)\\% Processor Time");
 	PerfCount::AddCounter(L"\\Processor(_Total)\\% Processor Time");
 
-	auto tid_3 = manager.addThread(PerfCount::Record, nullptr);
+	auto tid_4 = manager.addThread(PerfCount::Record, nullptr);
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(100000));
+	std::this_thread::sleep_for(std::chrono::milliseconds(60000));
 
 	manager.joinThreadSync(tid_0);
 
@@ -117,6 +125,8 @@ int main(int argc, char* argv[])
 
 	manager.joinThreadSync(tid_3);
 
+	manager.joinThreadSync(tid_4);
+
 	fclose(f);
 
 	//CFlush::FlushConsoleStream(&outbuffer);
@@ -131,6 +141,9 @@ int main(int argc, char* argv[])
 
 	//Close the handle only when all user threads stopped
 	//CFlush::CloseHandle();
+
+
+	//PyScript::DestInterpreter();
 
 	fclose(nstderr);
 

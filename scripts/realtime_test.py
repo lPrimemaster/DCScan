@@ -6,6 +6,9 @@ import matplotlib
 import matplotlib.pyplot as plt
 # import matplotlib.animation as animation
 
+#Imports only for embedded operation
+import DCS_Time as dcst
+
 islocal = len(sys.argv)
 
 if not islocal:
@@ -41,6 +44,6 @@ line1 = []
 
 while True:
 	rand_val = np.random.randn(1)
-	y_vec[-1] = rand_val
+	y_vec[-1] = dcst.systemHRC().sec
 	line1 = live_plotter(x_vec, y_vec, line1)
 	y_vec = np.append(y_vec[1:], 0.0)

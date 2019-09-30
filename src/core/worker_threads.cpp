@@ -37,6 +37,7 @@ void processThread(std::atomic<int>* flags, void * data)
 		while (CallbackPacket::getGlobalCBPStack()->empty() && flags->load() == THREAD_RUN)
 		{
 			//Use sleep_for() or yield() ? 
+			//TODO: Make this wait value based on the frequency of acquisition
 			std::this_thread::sleep_for(std::chrono::microseconds(10));
 		}
 

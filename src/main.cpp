@@ -28,13 +28,13 @@
 //Create a system where there can be more than one .ini file, for multiple configurations
 //Fix directory non existent for data or config files
 
+//Cleaned up the main function
 int main(int argc, char* argv[])
 {
 	//Initialize default windows handle for operation
 	CFlush::Init();
 
 	//PyScript::InitInterpreter();
-
 	PyScript script("realtime_test.py");
 
 
@@ -42,20 +42,13 @@ int main(int argc, char* argv[])
 	FILE* nstderr = NULL;
 	freopen_s(&nstderr, std::string("logs/" + GET_VERSION_STR() + ".log").c_str(), "w", stderr);
 
-	//Redirect cout to modified print - FIXME
-	std::stringstream outbuffer;
-	std::streambuf *outbuf = std::cout.rdbuf();
-	//std::cout.rdbuf(outbuffer.rdbuf());
-
 	ThreadManager manager;
 
 	Timestamp ts = Timer::apiTimeSystemHRC();
 
 	CFlush::println(0, "Program started!");
 	CFlush::println(1, "Current Time: %s", CFlush::formatString("%02d:%02d:%02d", ts.hour, ts.min, ts.sec).c_str());
-	/*std::cout << "Main thread [0x" << std::hex << std::uppercase << std::this_thread::get_id() << std::nouppercase << "] started." << std::dec << std::endl;*/
 
-	//IO::createIniFile("config\\default.ini");
 	IO::IniFileData data = IO::readIniFile("config\\default.ini");
 
 	AcquireDataOptions doptions;
@@ -94,13 +87,10 @@ int main(int argc, char* argv[])
 	//The following nomenclature is to be followed
 	//Convert all datatype pointers to intptr_t and then pass them to the required function or thread, unwrapping it later
 
-
 	auto tid_0 = manager.addThread(acquireThread, &doptions);
 	auto tid_1 = manager.addThread(processThread, convertToIntPointer(f, &doptions));
 	auto tid_2 = manager.addThread(controlThread, convertToIntPointer(&data));
 	auto tid_3 = manager.addThread(script.getRaw(), &script);
-
-	//CFlush::FlushConsoleStream(&outbuffer);
 
 	//PerfCount::PrintValidProcTimes();
 	PerfCount::Init();
@@ -129,19 +119,10 @@ int main(int argc, char* argv[])
 
 	fclose(f);
 
-	//CFlush::FlushConsoleStream(&outbuffer);
-
 	CFlush::println(2, "Program uptime: %s", Timer::apiUptimeString().c_str());
-
-	//CFlush::ClearConsole(0, CFlush::rows - THREAD_CONCURRENCY);
-	//CFlush::FlushConsoleStream(&outbuffer);
 
 	//Always revert the .ini file to default for safety purposes and test only
 	IO::createIniFile("config\\default.ini");
-
-	//Close the handle only when all user threads stopped
-	//CFlush::CloseHandle();
-
 
 	//PyScript::DestInterpreter();
 

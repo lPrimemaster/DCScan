@@ -89,7 +89,7 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>call "$(SolutionDir)DCScan\config\build_revision.bat" 2 0 $(ConfigurationName)</Command>
+      <Command>call "$(SolutionDir)config\build_revision.bat" 2 0 $(ConfigurationName)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -99,6 +99,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>H:\NI\NI-DAQ\DAQmx ANSI C Dev\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>H:\NI\NI-DAQ\DAQmx ANSI C Dev\lib\msvc;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -141,8 +142,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\core\api\DCScan.c" />
-    <ClCompile Include="src\core\api\execution.cpp" />
+    <ClCompile Include="src\core\api\dcscan.cpp" />
     <ClCompile Include="src\core\base\common.cpp" />
     <ClCompile Include="src\core\base\counter.cpp" />
     <ClCompile Include="src\core\base\Timer.cpp" />
@@ -160,8 +160,7 @@
     <ClCompile Include="src\version.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\core\api\execution.h" />
-    <ClInclude Include="src\core\api\include\DCScan.h" />
+    <ClInclude Include="src\core\api\include\dcscan.h" />
     <ClInclude Include="src\core\base\common.h" />
     <ClInclude Include="src\core\base\counter.h" />
     <ClInclude Include="src\core\base\Timer.h" />

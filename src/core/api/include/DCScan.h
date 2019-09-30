@@ -2,6 +2,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+
+#include <pybind11/iostream.h>
+
 #include "../../worker_threads.h"
 #include "../../base/Timer.h"
 #include "../../base/counter.h"
@@ -15,13 +18,22 @@
 
 #include "../../io/SerialCom.h"
 
-#include "../../../ctrl/PerfCount.h" //Test only
-#include "../../../ctrl/PyScript.h"  //Test only
+#include "../../../ctrl/PerfCount.h"
+#include "../../../ctrl/PyScript.h"
 
 //Define EMBEDED PYMODULES for export
 namespace py = pybind11;
 
 //All the modules only work in a embedded interpreter
+
+//DCS Modules
+
+//Common module
+PYBIND11_EMBEDDED_MODULE(DCS_Common, m)
+{
+	//Overload python print
+	m.def("print", [](py::str& str) { SetConsoleCursorPosition(CFlush::getDefaultHandle(), { 0, CFlush::current_ypos++ }); py::print(str); });
+}
 
 //Timing helper functions
 PYBIND11_EMBEDDED_MODULE(DCS_Time, m)
@@ -36,7 +48,7 @@ PYBIND11_EMBEDDED_MODULE(DCS_Time, m)
 		.def_readwrite("millis", &Timestamp::millis)
 		.def_readwrite("micros", &Timestamp::micros)
 		.def_readwrite("nanos", &Timestamp::nanos)
-		.def("__repr__", 
+		.def("__repr__", //TODO: Format this to be fancy
 			[](const Timestamp& ts)
 				{
 					return "<Timestamp : '" + std::to_string(ts.hour) + ":" + std::to_string(ts.min) + 

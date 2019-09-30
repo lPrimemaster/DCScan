@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <io.h>
+#include <fcntl.h>
 #include "core/worker_threads.h"
 #include "core/base/Timer.h"
 #include "core/base/counter.h"
@@ -16,17 +18,20 @@
 
 #include "ctrl/PerfCount.h" //Test only
 #include "ctrl/PyScript.h"  //Test only
+#include "core/utils/OLstreambuf.h" //Test only
 
 //Options for later work : César
 //Opt 1 - NI-DAQmx intrinsic handshaking for communication with engines
 //Opt 2 - Software timing / event for communication with engines
 
-//TODOS : César
+//TODO : César
 //Motors communication / control implementation
 //Api implementation for use in external GUI (for : Tiago ?)
 //Fix an error with thread concurrency at ThreadManager.cpp : 67 -> pool erased
 //Create a system where there can be more than one .ini file, for multiple configurations
 //Fix directory non existent for data or config files
+//Create a sized buffer on the screen with autoscroll to present std::cout
+//Fix warnings
 
 //Cleaned up the main function
 int main(int argc, char* argv[])
@@ -37,17 +42,25 @@ int main(int argc, char* argv[])
 	//PyScript::InitInterpreter();
 	PyScript script("realtime_test.py");
 
-
 	//Redirect cerr and stderr to file
 	FILE* nstderr = NULL;
 	freopen_s(&nstderr, std::string("logs/" + GET_VERSION_STR() + ".log").c_str(), "w", stderr);
+
+	//Redirect cout to window buffer (WinAPI)
+	OLstreambuf ols;
+	std::cout.rdbuf(&ols);
+	std::cout << "Test" << std::endl;
+
+	//Redirect stdout to window buffer (WinAPI)
+	int fd = _open_osfhandle((intptr_t)CFlush::getDefaultHandle(), O_WRONLY | O_TEXT);
+	int val = _dup2(fd, _fileno(stdout));
 
 	ThreadManager manager;
 
 	Timestamp ts = Timer::apiTimeSystemHRC();
 
-	CFlush::println(0, "Program started!");
-	CFlush::println(1, "Current Time: %s", CFlush::formatString("%02d:%02d:%02d", ts.hour, ts.min, ts.sec).c_str());
+	CFlush::println("Program started!");
+	CFlush::println("Current Time: %s", CFlush::formatString("%02d:%02d:%02d", ts.hour, ts.min, ts.sec).c_str());
 
 	IO::IniFileData data = IO::readIniFile("config\\default.ini");
 
@@ -127,6 +140,7 @@ int main(int argc, char* argv[])
 	//PyScript::DestInterpreter();
 
 	fclose(nstderr);
+	_close(fd);
 
 	return 0;
 }

@@ -8,12 +8,12 @@
 #include <Windows.h>
 #endif
 
-
+//TODO: Make ypos flexible when console is full - restart from top
 //This class supports async console flush (even for multiple instances of class) -- default handle = STD_OUTPUT_HANDLE
 class CFlush
 {
 public:
-	enum Color
+	enum class Color
 	{
 		TEXT_WHITE = FOREGROUND_RED   | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY,
 		TEXT_RED   = FOREGROUND_RED   | FOREGROUND_INTENSITY,
@@ -24,10 +24,13 @@ public:
 
 	friend static void custom_printf(WORD att, COORD coord, const char* fmt, va_list arg);
 	static bool Init();
+	static bool println(const char* fmt, ...);
 	static bool println(int line, const char* fmt, ...);
+	static bool printlnColor(Color c, const char* fmt, ...);
 	static bool printlnColor(Color c, int line, const char* fmt, ...);
 	static bool printXY(COORD xy, const char* fmt, ...);
 	static bool printXYColor(Color c, COORD xy, const char* fmt, ...);
+
 
 
 	static std::string formatString(const char* fmt, ...);
@@ -37,6 +40,7 @@ public:
 public:
 	static SHORT columns;
 	static SHORT rows;
+	static SHORT current_ypos;
 
 private:
 	CFlush() = default;

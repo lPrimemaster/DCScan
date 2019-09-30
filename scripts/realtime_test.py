@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 
 #Imports only for embedded operation
 import DCS_Time as dcst
+from DCS_Common import *
 
 islocal = len(sys.argv)
 
@@ -16,6 +17,10 @@ if not islocal:
 
 # Visuals will be defined in the backend side, for now use this
 plt.style.use('ggplot')
+
+# Test it out
+sys.stderr.write("Script started at: %s\n" % dcst.systemHRC())
+print("Script started at: %s\n" % dcst.systemHRC())
 
 def live_plotter(x_vec, y1_data, line1, identifier = '', pause_time = 0.1):
 	if line1 == []:

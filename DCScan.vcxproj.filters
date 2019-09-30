@@ -69,6 +69,9 @@
     <ClCompile Include="src\core\io\usb_serial.c">
       <Filter>C</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\utils\OLstreambuf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ctrl\ThreadManager.h">
@@ -115,6 +118,9 @@
     </ClInclude>
     <ClInclude Include="src\core\io\usb_serial.h">
       <Filter>C</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\utils\OLstreambuf.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

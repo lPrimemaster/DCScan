@@ -1,6 +1,7 @@
 #include "worker_threads.h"
 #include "worker_callbacks.h"
 #include "base/Timer.h"
+#include "../ctrl/CFlush.h"
 #include <chrono>
 
 void acquireThread(std::atomic<int>* flags, void * data)
@@ -79,6 +80,14 @@ void processThread(std::atomic<int>* flags, void * data)
 void controlThread(std::atomic<int>* flags, void* data)
 {
 	//TODO
+	while (true)
+	{
+		if (flags->load() == THREAD_HALT)
+			break;
 
+		Timestamp ts = Timer::apiTimeSystemHRC();
+		CFlush::println(1, "Current Time: %s", CFlush::formatString("%02d:%02lld:%02lld", ts.hour, ts.min, ts.sec).c_str());
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	}
 	flags->store(THREAD_ENDED);
 }

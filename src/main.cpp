@@ -49,7 +49,6 @@ int main(int argc, char* argv[])
 	//Redirect cout to window buffer (WinAPI)
 	OLstreambuf ols;
 	std::cout.rdbuf(&ols);
-	std::cout << "Test" << std::endl;
 
 	//Redirect stdout to window buffer (WinAPI)
 	int fd = _open_osfhandle((intptr_t)CFlush::getDefaultHandle(), O_WRONLY | O_TEXT);
@@ -107,8 +106,8 @@ int main(int argc, char* argv[])
 
 	//PerfCount::PrintValidProcTimes();
 	PerfCount::Init();
-	PerfCount::AddCounter(L"\\Process(DCScan)\\% Processor Time");
-	//PerfCount::AddCounter(L"\\Processor(_Total)\\% Processor Time");
+	//PerfCount::AddCounter(L"\\Process(DCScan)\\% Processor Time");
+	PerfCount::AddCounter(L"\\Processor(_Total)\\% Processor Time");
 
 	auto tid_4 = manager.addThread(PerfCount::Record, nullptr);
 

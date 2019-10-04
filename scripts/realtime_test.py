@@ -6,7 +6,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 # import matplotlib.animation as animation
 
-#Imports only for embedded operation
+# Imports only for embedded operation
 import DCS_Time as dcst
 from DCS_Common import *
 
@@ -24,6 +24,7 @@ print("Script started at: %s\n" % dcst.systemHRC())
 
 def live_plotter(x_vec, y1_data, line1, identifier = '', pause_time = 0.1):
 	if line1 == []:
+		plt.style.use('dark_background')
 		plt.ion()
 		fig = plt.figure(figsize = (13,6))
 		ax = fig.add_subplot(111)
@@ -48,7 +49,6 @@ y_vec = np.random.randn(len(x_vec))
 line1 = []
 
 while True:
-	rand_val = np.random.randn(1)
-	y_vec[-1] = dcst.systemHRC().sec
-	line1 = live_plotter(x_vec, y_vec, line1)
+	y_vec[-1] = dcst.systemHRC().millis
+	line1 = live_plotter(x_vec, y_vec, line1, identifier = 'Realtime millis')
 	y_vec = np.append(y_vec[1:], 0.0)

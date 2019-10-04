@@ -211,7 +211,10 @@ void PerfCount::Record(std::atomic<int>* flags, void* data)
 				log.value = DisplayValue.doubleValue;
 				it->logs.push_back(log);
 
-				CFlush::printXYColor(CFlush::Color::TEXT_GREEN, { 0, CFlush::rows - (SHORT)20 }, "CPU Usage %s %%", CFlush::formatString("%lf", log.value).c_str());
+				if(log.value < 50.0)
+					CFlush::printXYColor(CFlush::Color::TEXT_GREEN, { 0, CFlush::rows - (SHORT)20 }, "CPU Usage %s", CFlush::formatString("%.1lf%%", log.value).c_str());
+				else
+					CFlush::printXYColor(CFlush::Color::TEXT_RED, { 0, CFlush::rows - (SHORT)20 }, "CPU Usage %s", CFlush::formatString("%.1lf%%", log.value).c_str());
 			}
 		}
 

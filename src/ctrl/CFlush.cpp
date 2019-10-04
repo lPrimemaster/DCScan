@@ -165,6 +165,7 @@ bool CFlush::writeCharAttrib(HANDLE hnd, LPCSTR str, DWORD size, COORD location,
 
 bool CFlush::println(int line, const char* fmt, ...)
 {
+	current_ypos = line + 1;
 	COORD pos = {0, line};
 	va_list arg;
 	va_start(arg, fmt);
@@ -191,6 +192,7 @@ bool CFlush::printlnColor(Color c, const char* fmt, ...)
 
 bool CFlush::printlnColor(Color c, int line, const char* fmt, ...)
 {
+	current_ypos = line + 1;
 	COORD pos = { 0, line };
 	va_list arg;
 	va_start(arg, fmt);
@@ -228,7 +230,7 @@ bool CFlush::printXYColor(Color c, COORD xy, const char* fmt, ...)
 
 bool CFlush::printPos(WORD att, COORD pos, const char* fmt, va_list arg)
 {
-
+	//TODO: this is unecessary
 	SetConsoleActiveScreenBuffer(handle[0]);
 	custom_printf(att, pos, fmt, arg);
 

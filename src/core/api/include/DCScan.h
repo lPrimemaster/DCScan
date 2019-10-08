@@ -6,6 +6,7 @@
 #include <pybind11/iostream.h>
 
 #include "../../worker_threads.h"
+#include "../../worker_callbacks.h"
 #include "../../base/Timer.h"
 #include "../../base/counter.h"
 
@@ -64,4 +65,14 @@ PYBIND11_EMBEDDED_MODULE(DCS_Time, m)
 
 	m.def("uptimeString", &Timer::apiUptimeString, py::return_value_policy::copy);
 	m.def("systemClockString", &Timer::apiTimeSystemClockString, py::return_value_policy::copy);
+}
+
+//Data request module
+//This module creates a copy out of the required number of Datapackets wrapped arround python compatible types, to use on the front end
+//All the sent values are copies of the originals, since they are going to be used later on
+//The problem is on filling the memory, so counts would be a moroe viable option ??
+//TODO
+PYBIND11_EMBEDDED_MODULE(DCS_Data, m)
+{
+	
 }

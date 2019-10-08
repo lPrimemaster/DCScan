@@ -19,6 +19,7 @@
 #include "ctrl/PerfCount.h" //Test only
 #include "ctrl/PyScript.h"  //Test only
 #include "core/utils/OLstreambuf.h" //Test only
+#include "core/memory/DataChunk.h" //Test only
 
 //Options for later work : César
 //Opt 1 - NI-DAQmx intrinsic handshaking for communication with engines
@@ -45,6 +46,9 @@ int main(int argc, char* argv[])
 	//Redirect cerr and stderr to file
 	FILE* nstderr = NULL;
 	freopen_s(&nstderr, std::string("logs/" + GET_VERSION_STR() + ".log").c_str(), "w", stderr);
+
+	//Test py data packets
+	DataChunk<float64, 1024, 3> chunk;
 
 	//Redirect cout to window buffer (WinAPI)
 	OLstreambuf ols;

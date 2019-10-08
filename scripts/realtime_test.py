@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 
 # Imports only for embedded operation
 import DCS_Time as dcst
+import DCS_Data as dcsd
 from DCS_Common import *
 
 islocal = len(sys.argv)
@@ -50,5 +51,5 @@ line1 = []
 
 while True:
 	y_vec[-1] = dcst.systemHRC().millis
-	line1 = live_plotter(x_vec, y_vec, line1, identifier = 'Realtime millis')
+	line1 = live_plotter(x_vec, y_vec, line1, identifier = 'Last frame millis')
 	y_vec = np.append(y_vec[1:], 0.0)

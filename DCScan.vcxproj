@@ -168,6 +168,7 @@
     <ClInclude Include="src\core\io\register.h" />
     <ClInclude Include="src\core\io\SerialCom.h" />
     <ClInclude Include="src\core\io\usb_serial.h" />
+    <ClInclude Include="src\core\memory\DataChunk.h" />
     <ClInclude Include="src\core\Task.h" />
     <ClInclude Include="src\core\utils\OLstreambuf.h" />
     <ClInclude Include="src\core\worker_callbacks.h" />

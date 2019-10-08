@@ -122,5 +122,8 @@
     <ClInclude Include="src\core\utils\OLstreambuf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\core\memory\DataChunk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

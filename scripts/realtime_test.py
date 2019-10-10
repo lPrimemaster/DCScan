@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 # import matplotlib.animation as animation
 
 # Imports only for embedded operation
+from DCS_Common import *
 import DCS_Time as dcst
 import DCS_Data as dcsd
-from DCS_Common import *
 
 islocal = len(sys.argv)
 
@@ -50,6 +50,9 @@ y_vec = np.random.randn(len(x_vec))
 line1 = []
 
 while True:
-	y_vec[-1] = dcst.systemHRC().millis
+	npa = dcsd.lastPacket()
+	if len(npa):
+		y_vec[-1] = npa[0]
+	# print(array)
 	line1 = live_plotter(x_vec, y_vec, line1, identifier = 'Last frame millis')
 	y_vec = np.append(y_vec[1:], 0.0)

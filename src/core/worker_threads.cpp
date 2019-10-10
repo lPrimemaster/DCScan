@@ -2,6 +2,7 @@
 #include "worker_callbacks.h"
 #include "base/Timer.h"
 #include "../ctrl/CFlush.h"
+#include "../core/memory/DataChunk.h"
 #include <chrono>
 
 void acquireThread(std::atomic<int>* flags, void * data)
@@ -53,24 +54,36 @@ void processThread(std::atomic<int>* flags, void * data)
 		cbp_stack->pop_front();
 		CallbackPacket::getGlobalCBPMutex()->unlock();
 
+		//TODO: Make sure all data is sent to the front end
+		static DataChunk<float64,   1> dd_mem_chunk(sizeof(float64)   * dpacket.data_size, DEFAULT_DATA);
+		static DataChunk<long long, 1> td_mem_chunk(sizeof(long long) * dpacket.data_size,    TIME_DATA);
+
 		//Process the data
 		static long long dt = 1000000000 / opt->tproperties.timer.sampleRate; //In nanoseconds
 		static int dpser = 0;
 
 		long long ns = dpacket.software_tor_ns;
-		
+		std::vector<long long> local_ns_table;
+		local_ns_table.reserve(dpacket.data_size);
+
 		if (dpacket.data != nullptr)
 		{
 			for (int i = 0; i < dpacket.data_size; i++)
 			{
 				long long local_ns = ns - dt * (dpacket.data_size - i);
-				fprintf(f, "%d,%d,%d,%lf,%s\n", dpser, i, 1000 * dpser + i, dpacket.data[i],
-					Timer::timeStampToString(Timer::apiTimeSystemHRC_NanoToTimestamp(local_ns)).c_str());
+				Timestamp ts = Timer::apiTimeSystemHRC_NanoToTimestamp(local_ns);
+				local_ns_table.push_back(local_ns);
+
+				fprintf(f, "%d,%d,%d,%lf,%s\n", dpser, i, 1000 * dpser + i, dpacket.data[i], Timer::timeStampToString(ts).c_str());
 			}
 			dpser++;
 
+			dd_mem_chunk.set(dpacket.data);
+			td_mem_chunk.set(local_ns_table.data());
+
 			//Free data copy
 			free(dpacket.data);
+
 		}
 	}
 

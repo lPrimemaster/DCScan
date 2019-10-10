@@ -66,7 +66,7 @@ bool PyScript::operator()(py::object locals)
 		}
 		catch(py::error_already_set & eas)
 		{
-			std::cout << eas.what() << std::endl;
+			std::cerr << eas.what() << std::endl;
 			return false;
 		}
 		return true;

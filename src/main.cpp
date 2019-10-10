@@ -47,8 +47,10 @@ int main(int argc, char* argv[])
 	FILE* nstderr = NULL;
 	freopen_s(&nstderr, std::string("logs/" + GET_VERSION_STR() + ".log").c_str(), "w", stderr);
 
-	//Test py data packets
-	DataChunk<float64, 1024, 3> chunk;
+	float64 datat[5] = {5.0, 1.0, 0.0, 1.0, 0.0};
+
+	static DataChunk<float64, 1> dd_mem_chunk(sizeof(float64) * 5, DEFAULT_DATA);
+	dd_mem_chunk.set(datat);
 
 	//Redirect cout to window buffer (WinAPI)
 	OLstreambuf ols;

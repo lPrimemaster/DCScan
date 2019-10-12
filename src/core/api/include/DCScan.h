@@ -100,5 +100,5 @@ PYBIND11_EMBEDDED_MODULE(DCS_Data, m)
 	m.def("lastPacket",		  &getBEMC<float64,   1, DC_Data::DEFAULT_DATA>);
 	m.def("lastPacketTimeNS", &getBEMC<long long, 1,    DC_Data::TIME_DATA>);
 
-	//m.def("lastBufferCallback");
+	m.def("registerDataCallback", &registerDataCounter);
 }

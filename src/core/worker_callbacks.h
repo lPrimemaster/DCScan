@@ -3,6 +3,10 @@
 #include "base/Timer.h"
 #include <mutex>
 #include <deque>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+namespace py = pybind11;
 
 struct DataPacket
 {
@@ -27,4 +31,11 @@ struct CallbackPacket
 	}
 };
 
+struct CallBackRegistries
+{
+	static inline py::function data_count_callback;
+};
+
 int32 __cdecl EveryNCallback(TaskHandle taskHandle, int32 everyNsamplesEventType, uInt32 nSamples, void *callbackData);
+
+void registerDataCounter(std::string function, std::string module);

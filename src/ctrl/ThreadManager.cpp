@@ -80,8 +80,6 @@ void threadHelpTip(std::atomic_int* at, void* data)
 	manager->flags.clear();
 	manager->obj.clear();
 
-	delete[] manager->pool_used;
-
 	//Flag ending
 	ThreadManager::deinit.store(2);
 };
@@ -105,6 +103,9 @@ ThreadManager::~ThreadManager()
 
 	//Wait for thread to end - to proceed
 	while (deinit.load() != 2);
+
+	//TODO: Fix this memroy heap corruption aparently (???)
+	delete[] ThreadManager::pool_used;
 }
 
 std::thread::id ThreadManager::addThread(Tfunc threadFunction, void* threadData)

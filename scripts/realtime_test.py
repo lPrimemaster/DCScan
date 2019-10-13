@@ -40,7 +40,7 @@ plt.ion()
 
 (n, bins, patches) = plt.hist(a, 150 - 1, weights = b, facecolor='blue', edgecolor='white', linewidth=1.0, alpha=0.5)
 axes = plt.gca()
-axes.set_ylim([0, 20])
+axes.set_ylim([0, 1000])
 plt.show()
 
 x = 0

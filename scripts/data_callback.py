@@ -11,7 +11,6 @@ def data_callback(count_r, angle_r, delta_r):
 		oldvals_d = variables.totals.delta[angle_r]
 		variables.totals.count[angle_r] =  count_r + oldvals_c
 		variables.totals.delta[angle_r] =  delta_r + oldvals_d
-		# variables.totals[angle_r] =  variables.CBData(count_r, delta_r)
 
 # data_callback( 5,  7.0, 0.8)
 # data_callback( 9,  7.0, 0.8)

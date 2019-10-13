@@ -104,7 +104,7 @@ ThreadManager::~ThreadManager()
 	//Wait for thread to end - to proceed
 	while (deinit.load() != 2);
 
-	//TODO: Fix this memroy heap corruption aparently (???)
+	//TODO: Fix this memory heap corruption aparently (???)
 	delete[] ThreadManager::pool_used;
 }
 

@@ -1,8 +1,9 @@
 #include "worker_threads.h"
 #include "worker_callbacks.h"
+#include "base/counter.h"
 #include "base/Timer.h"
+#include "memory/DataChunk.h"
 #include "../ctrl/CFlush.h"
-#include "../core/memory/DataChunk.h"
 #include "../ctrl/PyScript.h"
 #include <chrono>
 
@@ -55,8 +56,8 @@ void processThread(std::atomic<int>* flags, void * data)
 		cbp_stack->pop_front();
 		CallbackPacket::getGlobalCBPMutex()->unlock();
 
-		static DataChunk<float64,   1> dd_mem_chunk(sizeof(float64)   * dpacket.data_size, DEFAULT_DATA);
-		static DataChunk<long long, 1> td_mem_chunk(sizeof(long long) * dpacket.data_size,    TIME_DATA);
+		static DataChunk<uInt32,    1> dd_mem_chunk(dpacket.data_size, DEFAULT_DATA);
+		static DataChunk<long long, 1> td_mem_chunk(dpacket.data_size,    TIME_DATA);
 
 		//Process the data
 		static long long dt = 1000000000 / opt->tproperties.timer.sampleRate; //In nanoseconds
@@ -78,7 +79,9 @@ void processThread(std::atomic<int>* flags, void * data)
 			}
 			dpser++;
 
-			dd_mem_chunk.set(dpacket.data);
+			uInt32 count = Counter::schmittTriggerData(dpacket.data, dpacket.data_size, 1.0, 5.0);
+
+			dd_mem_chunk.add(count); //This overflows like this
 			td_mem_chunk.set(local_ns_table.data());
 
 			//TODO: Count data and send it to front end as a callback
@@ -113,7 +116,7 @@ void controlThread(std::atomic<int>* flags, void* data)
 		if (CallBackRegistries::data_count_callback.ptr() && PyScript::getAtomicState())
 		{
 			py::gil_scoped_acquire acquire;
-			CallBackRegistries::data_count_callback(1, int(x / 10.0), 0.1);
+			CallBackRegistries::data_count_callback(std::sin(x / 100.0f), int(x / 10.0), 0.1);
 			py::gil_scoped_release release;
 			x++;
 		}

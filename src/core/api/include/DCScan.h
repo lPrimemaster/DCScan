@@ -26,25 +26,6 @@
 
 #include "../../../core/memory/DataChunk.h"
 
-static inline DataPacket getLast()
-{
-	if (CallbackPacket::getGlobalCBPStack()->empty())
-	{
-		static DataPacket dp;
-		if (!dp.data)
-		{
-			dp.data = new float64[200]();
-			dp.data_size = 200;
-		}
-		dp.data[0] += 1.0;
-		return dp;
-	}
-	else
-	{
-		return CallbackPacket::getGlobalCBPStack()->front();
-	}
-}
-
 //Define EMBEDED PYMODULES for export
 namespace py = pybind11;
 
@@ -97,7 +78,7 @@ PYBIND11_EMBEDDED_MODULE(DCS_Time, m)
 //TODO
 PYBIND11_EMBEDDED_MODULE(DCS_Data, m)
 {
-	m.def("lastPacket",		  &getBEMC<float64,   1, DC_Data::DEFAULT_DATA>);
+	m.def("lastPacket",		  &getBEMC<uInt32,    1, DC_Data::DEFAULT_DATA>);
 	m.def("lastPacketTimeNS", &getBEMC<long long, 1,    DC_Data::TIME_DATA>);
 
 	m.def("registerDataCallback", &registerDataCounter);

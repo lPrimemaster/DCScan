@@ -98,8 +98,8 @@ inline size_t DataChunk<T, dim>::add(const T* data, const size_t size)
 	assert(total_ptr + local <= heap);
 	total_ptr += local;
 
-	std::memcpy(this->curr_ptr, data, size * sizeof(T));
-	this->curr_ptr += size * sizeof(T);
+	std::memcpy(this->curr_ptr, data, local);
+	this->curr_ptr += local;
 	return heap - total_ptr;
 }
 

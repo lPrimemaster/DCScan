@@ -73,6 +73,7 @@ bool PyScript::operator()(py::object locals)
 			status = false;
 		}
 		state.store(0);
+		//TODO: Change this to a signal instead of random waiting
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		py::gil_scoped_acquire acquire;
 		return status;

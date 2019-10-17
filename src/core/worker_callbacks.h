@@ -8,7 +8,8 @@
 
 namespace py = pybind11;
 
-struct DataPacket
+//Align to closest power of 2 of 20 (if working with raw memory) [unknown alignment]
+struct /*alignas(32)*/ DataPacket
 {
 	float64* data;
 	size_t data_size;

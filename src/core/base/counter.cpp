@@ -1,133 +1,78 @@
 #include "counter.h"
 #include <iostream>
+#include <functional>
+#include <algorithm>
 
-int waitForLowerBound(float64 * data, size_t startingIndex, size_t size, float64 lowerBound)
+typedef bool (*CompareFunc)(float64, float64);
+
+struct Cmpdata
 {
-	size_t idx = startingIndex;
+	size_t index;
+	enum { RISING, FALLING }edge;
+};
+
+size_t waitForLimit(float64* data, size_t start, size_t size, float64 barrier, CompareFunc cmp)
+{
+	size_t idx = start;
 	while (true)
 	{
-		if (data[idx] < lowerBound)
-			break;
+		if (cmp(data[idx], barrier)) 
+			return idx;
 		else if (idx < size)
 		{
 			idx++;
 			continue;
 		}
-		return -1;
+		return size + 1;
 	}
-	return idx;
 }
 
-int waitForLowerUpperBound(float64* data, size_t startingIndex, size_t size, float64 lowerBound, float64 upperBound, bool* lower)
+#define CMP_LARGER  [](float64 a, float64 b) -> bool { return a > b; }
+#define CMP_SMALLER [](float64 a, float64 b) -> bool { return a < b; }
+
+Cmpdata waitForAny(float64* data, size_t start, size_t size, float64 barrier, float64 noise_threshold)
 {
-	size_t idx = startingIndex;
-	while (true)
+	Cmpdata cd = Cmpdata();
+
+	if (data[start] > barrier - noise_threshold)
 	{
-		if (data[idx] < lowerBound)
-		{
-			*lower = true;
-			break;
-		}
-		else if (data[idx] > upperBound)
-		{
-			*lower = false;
-			break;
-		}
-		else if (idx < size)
-		{
-			idx++;
-			continue;
-		}
-		*lower = false;
-		return -1;
+		cd.index = waitForLimit(data, start, size, barrier - noise_threshold, CMP_SMALLER);
+		cd.edge = Cmpdata::FALLING;
 	}
-	return idx;
+	else if (data[start] < barrier + noise_threshold)
+	{
+		cd.index = waitForLimit(data, start, size, barrier + noise_threshold, CMP_LARGER);
+		cd.edge = Cmpdata::RISING;
+	}
+
+	return cd;
 }
 
-uInt32 Counter::schmittTriggerData(float64 * data, size_t size, float64 lowerBound, float64 upperBound)
+uInt32 Counter::countPacket(float64 * data, size_t size, float64 barrier, float64 threshold)
 {
-	static float64 lastDataPoint = lowerBound;
-	uInt32 count = 0;
-	size_t index = 0;
+	static float64 lastDataPoint = barrier + threshold;
+	Cmpdata compare;
 
-	static bool overshoot = false;
+	compare.index = 0;
+	uInt32 count = 0UL;
 
-	//define first entry point
-	if (data[0] < lowerBound && lastDataPoint > lowerBound && !overshoot)
+	if (lastDataPoint < barrier + threshold && data[0] > barrier + threshold)
 	{
 		count++;
-		//std::cout << "[Default-last] Count " << count << " at point (" << index / 100.0 << "," << data[index] << ")." << std::endl;
-	}
-	else if (data[0] > upperBound)
-	{
-		index = waitForLowerBound(data, 0, size, lowerBound);
-		overshoot = false;
-	}
-	else if (data[0] < upperBound)
-	{
-		if (!overshoot)
-		{
-			bool lower;
-			index = waitForLowerUpperBound(data, 0, size, lowerBound, upperBound, &lower);
-
-			if (!lower)
-			{
-				index = waitForLowerBound(data, index, size, lowerBound);
-			}
-			else if (lastDataPoint > lowerBound)
-			{
-				count++;
-				//std::cout << "[Overshoot-last] Count " << count << " at point (" << index / 100.0 << "," << data[index] << ")." << std::endl;
-			}
-		}
-		else
-		{
-			index = waitForLowerBound(data, 0, size, lowerBound);
-			overshoot = false;
-		}
+		compare.index = 1;
 	}
 
-	lastDataPoint = data[size - 1];
-
-	//define main loop
 	while (true)
 	{
-		if (index >= size)
-			break;
-		//Data is always lower bound at this point
-		if (data[index] > lowerBound && data[index] < upperBound)
+		compare = waitForAny(data, compare.index, size, barrier, threshold);
+		if (compare.index > size)
 		{
-			bool lower;
-			index = waitForLowerUpperBound(data, index, size, lowerBound, upperBound, &lower);
-
-			if (index == -1)
-			{
-				overshoot = false;
-				break;
-			}
-
-			if (!lower)
-			{
-				overshoot = true;
-				index = waitForLowerBound(data, index, size, lowerBound);
-
-				if (index == -1)
-					break;
-
-				index++;
-				continue;
-			}
-			else
-			{
-				count++;
-				//std::cout << "[Default] Count " << count << " at point (" << index / 100.0 << "," << data[index] << ")." << std::endl;
-				index++;
-				continue;
-			}
+			lastDataPoint = data[size - 1];
+			return count;
 		}
-
-		index++;
+		else if (compare.edge == Cmpdata::RISING)
+		{
+			count++;
+		}
 	}
-
-	return count;
 }

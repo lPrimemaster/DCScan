@@ -22,17 +22,18 @@
 #include "core/memory/DataChunk.h" //Test only
 
 //Options for later work : César
-//Opt 1 - NI-DAQmx intrinsic handshaking for communication with engines
-//Opt 2 - Software timing / event for communication with engines
+//Opt 1 - NI-DAQmx intrinsic handshaking for communication with engines -- DONE
+//Opt 2 - Software timing / event for communication with engines -- DONE
 
 //TODO : César
-//Motors communication / control implementation
-//Api implementation for use in external GUI (for : Tiago ?)
-//Fix an error with thread concurrency at ThreadManager.cpp : 67 -> pool erased
+//Motors communication / control implementation -- DONE
+//Api implementation for use in external GUI -- DONE
+//Fix an error with thread concurrency at ThreadManager.cpp : 67 -> pool erased -- DONE
 //Create a system where there can be more than one .ini file, for multiple configurations
 //Fix directory non existent for data or config files
 //Create a sized buffer on the screen with autoscroll to present std::cout
 //Fix warnings
+//Use PyQt for the front-end
 
 //Cleaned up the main function
 int main(int argc, char* argv[])

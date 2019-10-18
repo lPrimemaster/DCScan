@@ -13,8 +13,11 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\C">
-      <UniqueIdentifier>{6431ca32-cda7-400d-8074-14003c54dae0}</UniqueIdentifier>
+    <Filter Include="API">
+      <UniqueIdentifier>{8a58028b-ca4a-4897-8b25-f6cb32706301}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="C">
+      <UniqueIdentifier>{fbad7ee9-3ccf-44d6-b15c-c8f89dd225b9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -36,25 +39,16 @@
     <ClCompile Include="src\core\worker_callbacks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\core\api\DCScan.c">
-      <Filter>Source Files\C</Filter>
-    </ClCompile>
     <ClCompile Include="src\core\base\Timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\core\base\counter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\core\io\usb_serial.c">
-      <Filter>Source Files\C</Filter>
-    </ClCompile>
     <ClCompile Include="src\ctrl\CFlush.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\core\io\register.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\core\api\execution.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\version.cpp">
@@ -67,6 +61,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\ctrl\PyScript.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\api\dcscan.cpp">
+      <Filter>API</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\io\usb_serial.c">
+      <Filter>C</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\utils\OLstreambuf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -95,16 +98,7 @@
     <ClInclude Include="src\ctrl\CFlush.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\core\io\usb_serial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\core\api\include\DCScan.h">
-      <Filter>Source Files\C</Filter>
-    </ClInclude>
     <ClInclude Include="src\core\io\register.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\core\api\execution.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\version.h">
@@ -117,6 +111,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ctrl\PyScript.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\api\include\dcscan.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\io\usb_serial.h">
+      <Filter>C</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\utils\OLstreambuf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\memory\DataChunk.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

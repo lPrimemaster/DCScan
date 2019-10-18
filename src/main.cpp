@@ -1,34 +1,50 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <io.h>
+#include <fcntl.h>
+
+//Main core behaviour
 #include "core/worker_threads.h"
+
+//Basic functionalities exposed
 #include "core/base/Timer.h"
 #include "core/base/counter.h"
 
-#include "ctrl/CFlush.h"
+//Core overloaded printf (backend <-> frontend)
+#include "core/utils/OLstreambuf.h"
 
+//Core io behaviour
 #include "core/io/usb_serial.h"
 #include "core/io/register.h"
-
-#include "version.h"
-
 #include "core/io/SerialCom.h"
 
-#include "ctrl/PerfCount.h" //Test only
-#include "ctrl/PyScript.h"  //Test only
+//Data management
+#include "core/memory/DataChunk.h" //Test only
+
+//Pipeline / frontend & stdout(err) control management 
+#include "ctrl/CFlush.h"
+#include "ctrl/PyScript.h"
+#include "ctrl/PerfCount.h"
+
+//Custom versioning
+#include "version.h"
+
 
 //Options for later work : César
-//Opt 1 - NI-DAQmx intrinsic handshaking for communication with engines
-//Opt 2 - Software timing / event for communication with engines
+//Opt 1 - NI-DAQmx intrinsic handshaking for communication with engines -- DONE
+//Opt 2 - Software timing / event for communication with engines -- DONE
 
-//TODOS : César
-//Motors communication / control implementation
-//Api implementation for use in external GUI (for : Tiago ?)
-//Fix an error with thread concurrency at ThreadManager.cpp : 67 -> pool erased
+//TODO : César
+//Motors communication / control implementation -- DONE
+//Api implementation for use in external GUI -- DONE
+//Fix an error with thread concurrency at ThreadManager.cpp : 67 -> pool erased -- DONE
 //Create a system where there can be more than one .ini file, for multiple configurations
 //Fix directory non existent for data or config files
+//Create a sized buffer on the screen with autoscroll to present std::cout
+//Fix warnings
+//Use PyQt for the front-end
 
-//Cleaned up the main function
 int main(int argc, char* argv[])
 {
 	//Initialize default windows handle for operation
@@ -37,17 +53,31 @@ int main(int argc, char* argv[])
 	//PyScript::InitInterpreter();
 	PyScript script("realtime_test.py");
 
-
 	//Redirect cerr and stderr to file
 	FILE* nstderr = NULL;
 	freopen_s(&nstderr, std::string("logs/" + GET_VERSION_STR() + ".log").c_str(), "w", stderr);
+
+	float64 datat[5] = {5.0, 1.0, 0.0, 1.0, 0.0};
+
+	static DataChunk<float64, 1> dd_mem_chunk(10, DEFAULT_DATA);
+	dd_mem_chunk.add(datat, 5);
+	//dd_mem_chunk.dis();
+	dd_mem_chunk.add(datat, 5);
+
+	//Redirect cout to window buffer (WinAPI)
+	OLstreambuf ols;
+	std::cout.rdbuf(&ols);
+
+	//Redirect stdout to window buffer (WinAPI)
+	int fd = _open_osfhandle((intptr_t)CFlush::getDefaultHandle(), O_WRONLY | O_TEXT);
+	int val = _dup2(fd, _fileno(stdout));
 
 	ThreadManager manager;
 
 	Timestamp ts = Timer::apiTimeSystemHRC();
 
-	CFlush::println(0, "Program started!");
-	CFlush::println(1, "Current Time: %s", CFlush::formatString("%02d:%02d:%02d", ts.hour, ts.min, ts.sec).c_str());
+	CFlush::println("Program started!");
+	CFlush::println("Current Time: %s", CFlush::formatString("%02d:%02d:%02d", ts.hour, ts.min, ts.sec).c_str());
 
 	IO::IniFileData data = IO::readIniFile("config\\default.ini");
 
@@ -94,8 +124,9 @@ int main(int argc, char* argv[])
 
 	//PerfCount::PrintValidProcTimes();
 	PerfCount::Init();
-	PerfCount::AddCounter(L"\\Process(DCScan)\\% Processor Time");
-	//PerfCount::AddCounter(L"\\Processor(_Total)\\% Processor Time");
+	//PerfCount::AddCounter(L"\\Process(DCScan)\\% Processor Time");
+	PerfCount::AddCounter(L"\\Processor(_Total)\\% Processor Time", PerfCount::CounterID::PROCESSOR_TIME);
+	//PerfCount::AddCounter(L"\\Memory\\Write Copies/sec", PerfCount::CounterID::MEMCOPIES_SEC);
 
 	auto tid_4 = manager.addThread(PerfCount::Record, nullptr);
 
@@ -127,6 +158,7 @@ int main(int argc, char* argv[])
 	//PyScript::DestInterpreter();
 
 	fclose(nstderr);
+	_close(fd);
 
 	return 0;
 }

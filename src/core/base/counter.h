@@ -3,5 +3,6 @@
 
 namespace Counter
 {
-	uInt32 schmittTriggerData(float64 * data, size_t size, float64 lowerBound, float64 upperBound);
+	//This function assures continuity of the data that is read
+	uInt32 countPacket(float64* data, size_t size, float64 barrier, float64 threshold);
 }

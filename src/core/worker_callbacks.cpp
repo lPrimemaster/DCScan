@@ -4,6 +4,7 @@
 
 int32 __cdecl EveryNCallback(TaskHandle taskHandle, int32 everyNsamplesEventType, uInt32 nSamples, void *callbackData)
 {
+	//TODO: tor should be here ??? - Test it
 	static int   totalRead = 0;
 	static int   totalPacket = 0;
 	int32 read = 0;
@@ -24,4 +25,10 @@ int32 __cdecl EveryNCallback(TaskHandle taskHandle, int32 everyNsamplesEventType
 	CallbackPacket::getGlobalCBPStack()->push_back(pct);
 
 	return 0;
+}
+
+void registerDataCounter(std::string function, std::string module)
+{
+	namespace py = pybind11;
+	CallBackRegistries::data_count_callback = py::reinterpret_borrow<py::function>(py::module::import(module.c_str()).attr(function.c_str()));
 }

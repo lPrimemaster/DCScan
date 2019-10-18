@@ -24,14 +24,14 @@ void threadHelpTip(std::atomic_int* at, void* data)
 		{
 			if (!ThreadManager::pool_used[i])
 			{
-				CFlush::printXYColor(CFlush::TEXT_GRAY, { 0,  (SHORT)(y - i)},  "Thread #%d", i);
-				CFlush::printXYColor(CFlush::TEXT_RED,  { 12, (SHORT)(y - i) }, " < IDLE    ");
-				CFlush::printXYColor(CFlush::TEXT_RED,  { 26, (SHORT)(y - i) }, "                               ");
+				CFlush::printXYColor(CFlush::Color::TEXT_GRAY, { 0,  (SHORT)(y - i)},  "Thread #%d", i);
+				CFlush::printXYColor(CFlush::Color::TEXT_RED,  { 12, (SHORT)(y - i) }, " < IDLE    ");
+				CFlush::printXYColor(CFlush::Color::TEXT_RED,  { 26, (SHORT)(y - i) }, "                               ");
 			}
 			else
 			{
-				CFlush::printXYColor(CFlush::TEXT_GRAY,  { 0,  (SHORT)(y - i) }, "Thread #%d", i);
-				CFlush::printXYColor(CFlush::TEXT_GREEN, { 12, (SHORT)(y - i) }, " < RUNNING ");
+				CFlush::printXYColor(CFlush::Color::TEXT_GRAY,  { 0,  (SHORT)(y - i) }, "Thread #%d", i);
+				CFlush::printXYColor(CFlush::Color::TEXT_GREEN, { 12, (SHORT)(y - i) }, " < RUNNING ");
 				
 				auto it = ThreadManager::pool_pos.begin();
 
@@ -49,8 +49,8 @@ void threadHelpTip(std::atomic_int* at, void* data)
 
 					std::stringstream ss;
 					ss << it->first;
-					//CFlush::printXYColor(CFlush::TEXT_GRAY, { 25, (SHORT)(y - i) }, " [%s] ", CFlush::formatString("%#06X", id));
-					CFlush::printXYColor(CFlush::TEXT_GRAY, { 25, (SHORT)(y - i) }, " [ID: %s]                ", ss.str().c_str());
+					//CFlush::printXYColor(CFlush::Color::TEXT_GRAY, { 25, (SHORT)(y - i) }, " [%s] ", CFlush::formatString("%#06X", id));
+					CFlush::printXYColor(CFlush::Color::TEXT_GRAY, { 25, (SHORT)(y - i) }, " [ID: %s]                ", ss.str().c_str());
 				}
 			}
 		}
@@ -80,8 +80,6 @@ void threadHelpTip(std::atomic_int* at, void* data)
 	manager->flags.clear();
 	manager->obj.clear();
 
-	delete[] manager->pool_used;
-
 	//Flag ending
 	ThreadManager::deinit.store(2);
 };
@@ -105,6 +103,9 @@ ThreadManager::~ThreadManager()
 
 	//Wait for thread to end - to proceed
 	while (deinit.load() != 2);
+
+	//TODO: Fix this memory heap corruption aparently (???)
+	delete[] ThreadManager::pool_used;
 }
 
 std::thread::id ThreadManager::addThread(Tfunc threadFunction, void* threadData)

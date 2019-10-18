@@ -1,9 +1,0 @@
-<RCC>
-  <qresource prefix="newPrefix">
-    <file>res/replay.svg</file>
-    <file>res/pause.svg</file>
-    <file>res/cancel-button.svg</file>
-    <file>res/stop.svg</file>
-    <file>res/movie-player-play-button.svg</file>
-  </qresource>
-</RCC>

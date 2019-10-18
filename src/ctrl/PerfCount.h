@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <atomic>
-#include <vector>
+#include <unordered_map>
 #define _UNICODE
 #define UNICODE
 #include <Windows.h>
@@ -20,7 +20,8 @@
 struct Log
 {
 	int time = 0;
-	double value = 0.0;
+	std::atomic<double> value = 0.0;
+	std::atomic<double> mean = 0.0;
 	WCHAR cname[64];
 };
 
@@ -28,19 +29,25 @@ struct CounterInfo
 {
 	PCWSTR counterName = NULL;
 	PDH_HCOUNTER counter = NULL;
-	std::vector<Log> logs;
-	double latest = 0.0;
+	Log latest;
 };
 
 class PerfCount
 {
 public:
+	enum class CounterID : int;
 	static void Init();
+	static void Deinit();
 	static void PrintValidProcTimes();
-	static void AddCounter(PCWSTR name);
+	static void AddCounter(PCWSTR name, CounterID identifier);
 	static void Record(std::atomic<int>* flags, void* data);
 
-	static double GetLatestCpuUsage();
+	static double getCounterValue(CounterID identifier);
+
+	enum class CounterID
+	{
+		PROCESSOR_TIME, MEMCOPIES_SEC
+	};
 
 private:
 	static PDH_HQUERY query;
@@ -50,6 +57,6 @@ private:
 
 	static bool fIsWorking;
 
-	static std::vector<CounterInfo> vciSelectedCounters;
+	static std::unordered_map<CounterID, CounterInfo*> vciSelectedCounters;
 };
 

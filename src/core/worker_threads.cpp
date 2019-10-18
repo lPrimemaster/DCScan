@@ -83,6 +83,7 @@ void processThread(std::atomic<int>* flags, void * data)
 
 			//Noise threshold is equal bilateral - 1.0 => TODO: Make this unilateral specific
 			//TODO: Normalize counts per unit time
+			//TODO: Get count width to analyse possible stacked data (pile up)
 			uInt32 count = Counter::countPacket(dpacket.data, dpacket.data_size, 5.0, 1.0);
 
 			dd_mem_chunk.add(count); //This overflows like this

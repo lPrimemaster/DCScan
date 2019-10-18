@@ -8,7 +8,7 @@ typedef bool (*CompareFunc)(float64, float64);
 struct Cmpdata
 {
 	size_t index;
-	enum { RISING, FALLING }edge;
+	enum { RISING, FALLING } edge;
 };
 
 size_t waitForLimit(float64* data, size_t start, size_t size, float64 barrier, CompareFunc cmp)
@@ -56,7 +56,8 @@ uInt32 Counter::countPacket(float64 * data, size_t size, float64 barrier, float6
 	compare.index = 0;
 	uInt32 count = 0UL;
 
-	if (lastDataPoint < barrier + threshold && data[0] > barrier + threshold)
+	//TODO: Fix this here
+	if (lastDataPoint < barrier - threshold && data[0] > barrier - threshold)
 	{
 		count++;
 		compare.index = 1;

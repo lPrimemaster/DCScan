@@ -7,7 +7,9 @@ HANDLE PerfCount::Event;
 bool PerfCount::fIsWorking;
 int PerfCount::time;
 
-std::vector<CounterInfo> PerfCount::vciSelectedCounters;
+std::unordered_map<PerfCount::CounterID, CounterInfo*> PerfCount::vciSelectedCounters;
+
+using namespace std::chrono_literals;
 
 static DWORD GetProcessorCount()
 {
@@ -169,6 +171,12 @@ void PerfCount::Init()
 	fIsWorking = true;
 }
 
+void PerfCount::Deinit()
+{
+	for (auto ci : vciSelectedCounters)
+		delete ci.second;
+}
+
 void PerfCount::Record(std::atomic<int>* flags, void* data)
 {
 	while (flags->load() == THREAD_RUN)
@@ -177,6 +185,7 @@ void PerfCount::Record(std::atomic<int>* flags, void* data)
 		ULONG CounterType;
 		ULONG WaitResult;
 		PDH_FMT_COUNTERVALUE DisplayValue;
+		SHORT row = 20;
 
 		status = PdhCollectQueryData(query);
 
@@ -196,36 +205,44 @@ void PerfCount::Record(std::atomic<int>* flags, void* data)
 
 		if (WaitResult == WAIT_OBJECT_0)
 		{
-			for (auto it = vciSelectedCounters.begin(); it < vciSelectedCounters.end(); it++)
+			for (auto it = vciSelectedCounters.begin(); it != vciSelectedCounters.end(); it++)
 			{
-				status = PdhGetFormattedCounterValue(it->counter, PDH_FMT_DOUBLE, &CounterType, &DisplayValue);
+				status = PdhGetFormattedCounterValue(it->second->counter, PDH_FMT_DOUBLE, &CounterType, &DisplayValue);
 
 				if (status != ERROR_SUCCESS)
 				{
 					continue;
 				}
 
-				Log log;
-				log.time = time;
-				wcscpy(log.cname, it->counterName);
-				log.value = DisplayValue.doubleValue;
-				it->logs.push_back(log);
+				it->second->latest.time = time;
+				wcscpy(it->second->latest.cname, it->second->counterName);
+				it->second->latest.value.store(DisplayValue.doubleValue);
 
-				if(log.value < 50.0)
-					CFlush::printXYColor(CFlush::Color::TEXT_GREEN, { 0, CFlush::rows - (SHORT)20 }, "CPU Usage %s", CFlush::formatString("%.1lf%%", log.value).c_str());
-				else
-					CFlush::printXYColor(CFlush::Color::TEXT_RED, { 0, CFlush::rows - (SHORT)20 }, "CPU Usage %s", CFlush::formatString("%.1lf%%", log.value).c_str());
+				switch (it->first)
+				{
+				case CounterID::PROCESSOR_TIME:
+					CFlush::printXYColor(DisplayValue.doubleValue < 50.0 ? CFlush::Color::TEXT_GREEN : CFlush::Color::TEXT_RED, 
+						{ 0, CFlush::rows - (SHORT)row-- }, "CPU Usage: %s", CFlush::formatString("%.1lf%%", DisplayValue.doubleValue).c_str());
+					break;
+				case CounterID::MEMCOPIES_SEC:
+					CFlush::printXYColor(DisplayValue.doubleValue < 1000.0 ? CFlush::Color::TEXT_GREEN : CFlush::Color::TEXT_RED,
+						{ 0, CFlush::rows - (SHORT)row-- }, "Memory (op/s): %s", CFlush::formatString("%.1lf", DisplayValue.doubleValue).c_str());
+					break;
+				default:
+					break;
+				}
 			}
 		}
 
 		time++;
+		std::this_thread::sleep_for(250ms);
 	}
 }
 
-double PerfCount::GetLatestCpuUsage()
+double PerfCount::getCounterValue(CounterID identifier)
 {
-	//return vciSelectedCounters.at(0).latest.load();
-	return 0.0;
+	return vciSelectedCounters.at(identifier)->latest.value.load();
+
 	//TODO : Get a single processor status -> Skip all this for now
 	/*for (auto it = vciSelectedCounters.begin(); it < vciSelectedCounters.end(); it++)
 	{
@@ -247,20 +264,20 @@ void PerfCount::PrintValidProcTimes()
 	}
 }
 
-void PerfCount::AddCounter(PCWSTR name)
+void PerfCount::AddCounter(PCWSTR name, CounterID identifier)
 {
 	if (fIsWorking)
 	{
 		PDH_STATUS status;
-		CounterInfo ci;
-		ci.counterName = name;
-		status = PdhAddCounter(query, ci.counterName, 0, &ci.counter);
+		CounterInfo* ci = new CounterInfo();
+		ci->counterName = name;
+		status = PdhAddCounter(query, ci->counterName, 0, &ci->counter);
 
 		if (status != ERROR_SUCCESS)
 		{
 			return;
 		}
 
-		vciSelectedCounters.push_back(ci);
+		vciSelectedCounters.try_emplace(identifier, ci);
 	}
 }

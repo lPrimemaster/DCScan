@@ -3,23 +3,33 @@
 #include <string>
 #include <io.h>
 #include <fcntl.h>
+
+//Main core behaviour
 #include "core/worker_threads.h"
+
+//Basic functionalities exposed
 #include "core/base/Timer.h"
 #include "core/base/counter.h"
 
-#include "ctrl/CFlush.h"
+//Core overloaded printf (backend <-> frontend)
+#include "core/utils/OLstreambuf.h"
 
+//Core io behaviour
 #include "core/io/usb_serial.h"
 #include "core/io/register.h"
-
-#include "version.h"
-
 #include "core/io/SerialCom.h"
 
-#include "ctrl/PerfCount.h" //Test only
-#include "ctrl/PyScript.h"  //Test only
-#include "core/utils/OLstreambuf.h" //Test only
+//Data management
 #include "core/memory/DataChunk.h" //Test only
+
+//Pipeline / frontend & stdout(err) control management 
+#include "ctrl/CFlush.h"
+#include "ctrl/PyScript.h"
+#include "ctrl/PerfCount.h"
+
+//Custom versioning
+#include "version.h"
+
 
 //Options for later work : César
 //Opt 1 - NI-DAQmx intrinsic handshaking for communication with engines -- DONE
@@ -35,7 +45,6 @@
 //Fix warnings
 //Use PyQt for the front-end
 
-//Cleaned up the main function
 int main(int argc, char* argv[])
 {
 	//Initialize default windows handle for operation
@@ -116,7 +125,8 @@ int main(int argc, char* argv[])
 	//PerfCount::PrintValidProcTimes();
 	PerfCount::Init();
 	//PerfCount::AddCounter(L"\\Process(DCScan)\\% Processor Time");
-	PerfCount::AddCounter(L"\\Processor(_Total)\\% Processor Time");
+	PerfCount::AddCounter(L"\\Processor(_Total)\\% Processor Time", PerfCount::CounterID::PROCESSOR_TIME);
+	//PerfCount::AddCounter(L"\\Memory\\Write Copies/sec", PerfCount::CounterID::MEMCOPIES_SEC);
 
 	auto tid_4 = manager.addThread(PerfCount::Record, nullptr);
 

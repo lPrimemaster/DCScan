@@ -33,6 +33,10 @@ public:
 
 	static void InitInterpreter();
 	static void DestInterpreter();
+	static inline int getAtomicState()
+	{
+		return state.load();
+	}
 
 private:
 	py::module module;
@@ -40,7 +44,7 @@ private:
 	std::filesystem::path wdir = "scripts";
 	std::wstring s_name;
 
-
+	inline static std::atomic<int> state;
 	static py::module sys;
 	static bool intRunning;
 };

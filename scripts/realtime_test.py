@@ -1,46 +1,63 @@
 import sys
+
+if not len(sys.argv):
+	sys.argv.append('rtt_module.py')
+	sys.path.append('./scripts/')
+
 import numpy as np
-# import pandas as pd
+import pandas as pd
 # import seaborn as sns
 import matplotlib
 import matplotlib.pyplot as plt
 # import matplotlib.animation as animation
 
-islocal = len(sys.argv)
+# Imports only for embedded operation
+from DCS_Common import *
+import DCS_Time as dcst
+import DCS_Data as dcsd
 
-if not islocal:
-	sys.argv.append('rtt_module.py')
+# Imports all the variables used to save the data on memory during execution
+import variables as vars
+import data_callback as dcb
 
-# Visuals will be defined in the backend side, for now use this
-plt.style.use('ggplot')
+# Visuals will be defined by the backend side, for now use this
+# plt.style.use('ggplot')
 
-def live_plotter(x_vec, y1_data, line1, identifier = '', pause_time = 0.1):
-	if line1 == []:
-		plt.ion()
-		fig = plt.figure(figsize = (13,6))
-		ax = fig.add_subplot(111)
-		
-		line1, = ax.plot(x_vec, y1_data, '-o', alpha = 0.8)
-		
-		plt.ylabel('Y Axis')
-		plt.title('Title: {}'.format(identifier))
-		plt.show()
+# Test it out
+sys.stderr.write("Script started at: %s\n" % dcst.systemHRC())
+print("Script started at: %s\n" % dcst.systemHRC())
 
-	line1.set_ydata(y1_data)
-	if np.min(y1_data) <= line1.axes.get_ylim()[0] or np.max(y1_data) >= line1.axes.get_ylim()[1]:
-		plt.ylim([np.min(y1_data) - np.std(y1_data), np.max(y1_data) + np.std(y1_data)])
-	
-	plt.pause(pause_time)
-	
-	return line1
+dcsd.registerDataCallback('data_callback', 'data_callback')
 
-size = 100
-x_vec = np.linspace(0, 1, size + 1)[0:-1]
-y_vec = np.random.randn(len(x_vec))
-line1 = []
+def handle_close(evt):
+	data_frame = pd.DataFrame(list(vars.totals.items()), columns = ['Angle', 'CBData'])
+	df = pd.concat([data_frame.iloc[:, :1], data_frame['CBData'].apply(pd.Series)], axis=1)
+	df.columns = ['Angle', 'Event Frequency', 'UNIX Time (ns)']
+	df.set_index('Angle', inplace=True)
+	df.to_csv(r'./data/modeled.csv')
+	f = open('./data/modeled.html', 'w')
+	f.write(df.to_html())
+	f.close()
 
+a = [x for x in range(150)]
+b = [0 for x in range(150)]
+
+plt.style.use('dark_background')
+plt.ion()
+
+fig = plt.figure()
+fig.canvas.mpl_connect('close_event', handle_close)
+
+(n, bins, patches) = plt.hist(a, 150 - 1, weights = b, facecolor='blue', edgecolor='white', linewidth=1.0, alpha=0.5)
+axes = plt.gca()
+axes.set_ylim([0, 1000])
+plt.show()
+
+x = 0
 while True:
-	rand_val = np.random.randn(1)
-	y_vec[-1] = rand_val
-	line1 = live_plotter(x_vec, y_vec, line1)
-	y_vec = np.append(y_vec[1:], 0.0)
+	while x < 149:
+		if x in vars.totals:
+			patches[x].set_height(vars.totals[x].count)
+		x += 1
+	x = 0
+	plt.pause(0.5)

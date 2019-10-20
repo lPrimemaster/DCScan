@@ -1,6 +1,10 @@
 #include "worker_threads.h"
 #include "worker_callbacks.h"
+#include "base/counter.h"
 #include "base/Timer.h"
+#include "memory/DataChunk.h"
+#include "../ctrl/CFlush.h"
+#include "../ctrl/PyScript.h"
 #include <chrono>
 
 void acquireThread(std::atomic<int>* flags, void * data)
@@ -52,24 +56,50 @@ void processThread(std::atomic<int>* flags, void * data)
 		cbp_stack->pop_front();
 		CallbackPacket::getGlobalCBPMutex()->unlock();
 
+		static DataChunk<uInt32,    1> dd_mem_chunk(dpacket.data_size, DEFAULT_DATA);
+		static DataChunk<long long, 1> td_mem_chunk(dpacket.data_size,    TIME_DATA);
+
 		//Process the data
-		static long long dt = 1000000000 / opt->tproperties.timer.sampleRate; //In nanoseconds
+		static const long long dt = 1000000000 / opt->tproperties.timer.sampleRate; //In nanoseconds
 		static int dpser = 0;
 
 		long long ns = dpacket.software_tor_ns;
-		
+		std::vector<long long> local_ns_table;
+		local_ns_table.reserve(dpacket.data_size);
+
+		auto getLocal_ns = [ns, dpacket](size_t i) -> long long { return ns - dt * (dpacket.data_size - i); };
+
 		if (dpacket.data != nullptr)
 		{
 			for (int i = 0; i < dpacket.data_size; i++)
 			{
-				long long local_ns = ns - dt * (dpacket.data_size - i);
-				fprintf(f, "%d,%d,%d,%lf,%s\n", dpser, i, 1000 * dpser + i, dpacket.data[i],
-					Timer::timeStampToString(Timer::apiTimeSystemHRC_NanoToTimestamp(local_ns)).c_str());
+				long long local_ns = getLocal_ns(i);
+				Timestamp ts = Timer::apiTimeSystemHRC_NanoToTimestamp(local_ns);
+				local_ns_table.push_back(local_ns);
+
+				fprintf(f, "%d,%d,%d,%lf,%s\n", dpser, i, 1000 * dpser + i, dpacket.data[i], Timer::timeStampToString(ts).c_str());
 			}
 			dpser++;
 
+			//Noise threshold is equal bilateral - 1.0 => TODO: Make this unilateral specific
+			//TODO: Normalize counts per unit time
+			//TODO: Get count width to analyse possible stacked data (pile up)
+			uInt32 count = Counter::countPacket(dpacket.data, dpacket.data_size, 5.0, 1.0);
+
+			dd_mem_chunk.add(count); //This overflows like this
+			td_mem_chunk.set(local_ns_table.data());
+
+			//TODO: Count data and send it to front end as a callback
+			if (CallBackRegistries::data_count_callback.ptr() && PyScript::getAtomicState())
+			{
+				py::gil_scoped_acquire acquire;
+				CallBackRegistries::data_count_callback(count, 1, ns);
+				py::gil_scoped_release release;
+			}
+
 			//Free data copy
 			free(dpacket.data);
+
 		}
 	}
 
@@ -78,7 +108,30 @@ void processThread(std::atomic<int>* flags, void * data)
 
 void controlThread(std::atomic<int>* flags, void* data)
 {
-	//TODO
+	int x = 0;
 
+	while (true)
+	{
+		if (flags->load() == THREAD_HALT)
+			break;
+
+		Timestamp ts = Timer::apiTimeSystemHRC();
+		CFlush::println(1, "Current Time: %s", CFlush::formatString("%02d:%02lld:%02lld", ts.hour, ts.min, ts.sec).c_str());
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		if (CallBackRegistries::data_count_callback.ptr() && PyScript::getAtomicState())
+		{
+			try
+			{
+				py::gil_scoped_acquire acquire;
+				CallBackRegistries::data_count_callback(std::sin(x / 100.0f), int(x / 10.0), 0.1);
+				py::gil_scoped_release release;
+				x++;
+			}
+			catch (py::error_already_set & eas)
+			{
+				std::cerr << eas.what() << std::endl;
+			}
+		}
+	}
 	flags->store(THREAD_ENDED);
 }

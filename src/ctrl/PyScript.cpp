@@ -1,4 +1,5 @@
 #include "PyScript.h"
+#include "../core/worker_callbacks.h"
 
 bool PyScript::intRunning = false;
 py::module PyScript::sys;
@@ -19,7 +20,7 @@ PyScript::PyScript(std::filesystem::path filepath)
 
 	if (!file.is_open() || !file.good())
 	{
-		std::cerr << "Script: " << filepath << path.extension() << " couldn't be opened." << std::endl;
+		std::cerr << "Script: " << filepath << " couldn't be opened." << std::endl;
 		return;
 	}
 
@@ -60,16 +61,22 @@ bool PyScript::operator()(py::object locals)
 
 	if (PyScript::intRunning)
 	{
+		bool status = true;
+		state.store(1);
 		try
 		{
 			py::exec(script_body, py::globals(), locals);
 		}
 		catch(py::error_already_set & eas)
 		{
-			std::cout << eas.what() << std::endl;
-			return false;
+			std::cerr << eas.what() << std::endl;
+			status = false;
 		}
-		return true;
+		state.store(0);
+		//TODO: Change this to a signal instead of random waiting
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		py::gil_scoped_acquire acquire;
+		return status;
 	}
 
 	std::cerr << "Python interpreter is not running. Aborting." << std::endl;

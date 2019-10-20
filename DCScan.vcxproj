@@ -150,6 +150,7 @@
     <ClCompile Include="src\core\io\SerialCom.cpp" />
     <ClCompile Include="src\core\io\usb_serial.c" />
     <ClCompile Include="src\core\Task.cpp" />
+    <ClCompile Include="src\core\utils\OLstreambuf.cpp" />
     <ClCompile Include="src\core\worker_callbacks.cpp" />
     <ClCompile Include="src\core\worker_threads.cpp" />
     <ClCompile Include="src\ctrl\CFlush.cpp" />
@@ -167,7 +168,9 @@
     <ClInclude Include="src\core\io\register.h" />
     <ClInclude Include="src\core\io\SerialCom.h" />
     <ClInclude Include="src\core\io\usb_serial.h" />
+    <ClInclude Include="src\core\memory\DataChunk.h" />
     <ClInclude Include="src\core\Task.h" />
+    <ClInclude Include="src\core\utils\OLstreambuf.h" />
     <ClInclude Include="src\core\worker_callbacks.h" />
     <ClInclude Include="src\core\worker_threads.h" />
     <ClInclude Include="src\ctrl\CFlush.h" />

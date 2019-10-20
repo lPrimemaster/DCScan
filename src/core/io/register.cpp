@@ -143,7 +143,7 @@ namespace IO
 
 	bool valueHasBracket(const std::string & str)
 	{
-		//Only valid bracket is first char before any valid char / however this is not checked hgere
+		//Only valid bracket is first char before any valid char / however this is not checked here
 		if(str.find_first_of('{') != std::string::npos)
 			return false;
 		return true;

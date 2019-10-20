@@ -7,6 +7,7 @@
 HANDLE CFlush::handle[2] = { nullptr };
 SHORT CFlush::columns = 0;
 SHORT CFlush::rows = 0;
+SHORT CFlush::current_ypos = 0;
 
 static char* convert(unsigned int num, int base)
 {
@@ -27,6 +28,7 @@ static char* convert(unsigned int num, int base)
 }
 
 //Sampled from : http://www.firmcodes.com/write-printf-function-c/
+//Further modified
 static void custom_printf(WORD att, COORD coord, const char* fmt, va_list arg)
 {
 	char* traverse;
@@ -112,7 +114,6 @@ static void custom_printf(WORD att, COORD coord, const char* fmt, va_list arg)
 bool CFlush::Init()
 {
 	//One serves as a backbuffer as the other serves as the front one
-
 	handle[0] = CreateConsoleScreenBuffer(GENERIC_WRITE, NULL, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
 	handle[1] = CreateConsoleScreenBuffer(GENERIC_WRITE, NULL, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
 
@@ -121,6 +122,8 @@ bool CFlush::Init()
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
 	columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
 	rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+
+	SetStdHandle(STD_OUTPUT_HANDLE, handle[0]);
 
 	////Redirect std::ios and stdio to this handle[0]
 	//int hConHandle = _open_osfhandle((long)handle[0], _O_TEXT);
@@ -132,6 +135,20 @@ bool CFlush::Init()
 	//std::cout.rdbuf(stream.rdbuf());
 
 	return handle[0] != nullptr;
+}
+
+bool CFlush::println(const char* fmt, ...)
+{
+	COORD pos = { 0, current_ypos++ };
+	
+	va_list arg;
+	va_start(arg, fmt);
+
+	printPos(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY, pos, fmt, arg);
+
+	va_end(arg);
+
+	return true;
 }
 
 bool CFlush::writeCharAttrib(HANDLE hnd, LPCSTR str, DWORD size, COORD location, WORD color)
@@ -148,7 +165,21 @@ bool CFlush::writeCharAttrib(HANDLE hnd, LPCSTR str, DWORD size, COORD location,
 
 bool CFlush::println(int line, const char* fmt, ...)
 {
+	current_ypos = line + 1;
 	COORD pos = {0, line};
+	va_list arg;
+	va_start(arg, fmt);
+
+	printPos(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY, pos, fmt, arg);
+
+	va_end(arg);
+
+	return true;
+}
+
+bool CFlush::printlnColor(Color c, const char* fmt, ...)
+{
+	COORD pos = { 0, current_ypos++ };
 	va_list arg;
 	va_start(arg, fmt);
 
@@ -161,6 +192,7 @@ bool CFlush::println(int line, const char* fmt, ...)
 
 bool CFlush::printlnColor(Color c, int line, const char* fmt, ...)
 {
+	current_ypos = line + 1;
 	COORD pos = { 0, line };
 	va_list arg;
 	va_start(arg, fmt);
@@ -198,7 +230,7 @@ bool CFlush::printXYColor(Color c, COORD xy, const char* fmt, ...)
 
 bool CFlush::printPos(WORD att, COORD pos, const char* fmt, va_list arg)
 {
-
+	//TODO: this is unecessary
 	SetConsoleActiveScreenBuffer(handle[0]);
 	custom_printf(att, pos, fmt, arg);
 

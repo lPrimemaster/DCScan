@@ -10,25 +10,137 @@
     <height>720</height>
    </rect>
   </property>
-  <property name="minimumSize">
-   <size>
-    <width>1280</width>
-    <height>720</height>
-   </size>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="focusPolicy">
+   <enum>Qt::NoFocus</enum>
   </property>
   <property name="windowTitle">
-   <string>DCScan</string>
+   <string>MainWindow</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">#centralwidget
+{
+	background-color: #333;
+}
+
+QPushButton
+{
+	background: #ff0000;
+	border-radius:15px;
+	font: 15px &quot;Rockwell&quot;;
+}
+
+QPushButton:hover
+{
+	background: #ff6600;
+	border-radius:15px;
+	font: 15px &quot;Rockwell&quot;;
+}
+
+QMenuBar
+{
+	background-color: #111;
+	padding: 2px;
+	text-align: center;
+}
+
+QMenuBar::item
+{
+	color: white;
+	padding: 7px;
+	border-radius: 2px;
+	text-align: center;
+}
+
+QMenuBar::item:selected 
+{
+	background: red;
+}
+
+QMenuBar::item:pressed 
+{  
+	background: white;
+	color: black;
+}
+
+QMenu
+{
+	background-color: #111;
+	text-align: center;
+}
+
+QMenu::item
+{
+	color: white;
+	text-align: center;
+}
+
+QMenu::item:selected 
+{
+	background: red;
+}
+
+QMenu::item:pressed 
+{  
+	background: white;
+	color: black;
+}</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="MplWidget" name="MplWidget" native="true">
+   <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>270</x>
+      <x>10</x>
       <y>10</y>
-      <width>1001</width>
-      <height>651</height>
+      <width>171</width>
+      <height>91</height>
      </rect>
     </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QPushButton" name="pushButton">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="text">
+        <string>Button</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_2">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="text">
+        <string>Button</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -37,26 +149,132 @@
      <x>0</x>
      <y>0</y>
      <width>1280</width>
-     <height>21</height>
+     <height>34</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFile">
+   <widget class="QMenu" name="menuRun">
     <property name="title">
-     <string>File</string>
+     <string>Run</string>
+    </property>
+    <addaction name="actionAcquire_w_current_settings"/>
+    <addaction name="actionStop_Acquisition"/>
+    <addaction name="actionSelf_Test"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
     </property>
    </widget>
-   <addaction name="menuFile"/>
+   <widget class="QMenu" name="menuAbout">
+    <property name="title">
+     <string>About</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <addaction name="actionAcquisition"/>
+    <addaction name="actionControl"/>
+    <addaction name="actionProcess"/>
+   </widget>
+   <widget class="QMenu" name="menuConfigure">
+    <property name="title">
+     <string>Configure</string>
+    </property>
+    <addaction name="actionGeneral"/>
+    <addaction name="actionAxis"/>
+    <addaction name="actionOptical_Enconder"/>
+   </widget>
+   <widget class="QMenu" name="menuExport">
+    <property name="title">
+     <string>Export</string>
+    </property>
+    <widget class="QMenu" name="menuFile">
+     <property name="title">
+      <string>File</string>
+     </property>
+     <addaction name="actionCsv"/>
+     <addaction name="actionHtml"/>
+     <addaction name="actionsql"/>
+    </widget>
+    <addaction name="actionCSV"/>
+    <addaction name="menuFile"/>
+   </widget>
+   <addaction name="menuRun"/>
+   <addaction name="menuSettings"/>
+   <addaction name="menuConfigure"/>
+   <addaction name="menuExport"/>
+   <addaction name="menuHelp"/>
+   <addaction name="menuAbout"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionAcquire_w_current_settings">
+   <property name="text">
+    <string>Start Acquisition</string>
+   </property>
+  </action>
+  <action name="actionStop_Acquisition">
+   <property name="text">
+    <string>Stop Acquisition</string>
+   </property>
+  </action>
+  <action name="actionSelf_Test">
+   <property name="text">
+    <string>Self Test</string>
+   </property>
+  </action>
+  <action name="actionAcquisition">
+   <property name="text">
+    <string>Acquisition</string>
+   </property>
+  </action>
+  <action name="actionControl">
+   <property name="text">
+    <string>Control</string>
+   </property>
+  </action>
+  <action name="actionProcess">
+   <property name="text">
+    <string>Process</string>
+   </property>
+  </action>
+  <action name="actionAxis">
+   <property name="text">
+    <string>Axis</string>
+   </property>
+  </action>
+  <action name="actionOptical_Enconder">
+   <property name="text">
+    <string>Optical Encoder</string>
+   </property>
+  </action>
+  <action name="actionGeneral">
+   <property name="text">
+    <string>General</string>
+   </property>
+  </action>
+  <action name="actionCSV">
+   <property name="text">
+    <string>Quick Export</string>
+   </property>
+  </action>
+  <action name="actionCsv">
+   <property name="text">
+    <string>csv</string>
+   </property>
+  </action>
+  <action name="actionHtml">
+   <property name="text">
+    <string>html</string>
+   </property>
+  </action>
+  <action name="actionsql">
+   <property name="text">
+    <string>sql</string>
+   </property>
+  </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>MplWidget</class>
-   <extends>QWidget</extends>
-   <header>mplwidget.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

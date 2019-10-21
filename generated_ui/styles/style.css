@@ -1,0 +1,67 @@
+#centralwidget
+{
+	background-color: #333;
+}
+
+QPushButton
+{
+	background: #ff0000;
+	border-radius:15px;
+	font: 15px "Rockwell";
+}
+
+QPushButton:hover
+{
+	background: #ff6600;
+	border-radius:15px;
+	font: 15px "Rockwell";
+}
+
+QMenuBar
+{
+	background-color: #111;
+	padding: 2px;
+	text-align: center;
+}
+
+QMenuBar::item
+{
+	color: white;
+	padding: 7px;
+	border-radius: 2px;
+	text-align: center;
+}
+
+QMenuBar::item:selected 
+{
+	background: red;
+}
+
+QMenuBar::item:pressed 
+{  
+	background: white;
+	color: black;
+}
+
+QMenu
+{
+	background-color: #111;
+	text-align: center;
+}
+
+QMenu::item
+{
+	color: white;
+	text-align: center;
+}
+
+QMenu::item:selected 
+{
+	background: red;
+}
+
+QMenu::item:pressed 
+{  
+	background: white;
+	color: black;
+}

@@ -15,3 +15,6 @@ void processThread(std::atomic<int>* flags, void* data);
 
 //This thread controls the engines using ASCII commands sent in binary to the controller
 void controlThread(std::atomic<int>* flags, void* data);
+
+//This thread calls python code to display the user GUI
+void userGUIThread(std::atomic<int>* flags, void* data);

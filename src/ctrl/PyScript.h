@@ -24,18 +24,25 @@ public:
 	PyScript(std::filesystem::path filepath);
 	~PyScript();
 
-	bool operator()(py::object locals = py::object());
+	bool operator()();
 
 	bool setWorkingDir(std::filesystem::path dir = "scripts");
 
-	Tfunc getRaw();
-
-
 	static void InitInterpreter();
 	static void DestInterpreter();
-	static inline int getAtomicState()
+	inline int getAtomicState()
 	{
 		return state.load();
+	}
+
+	static inline py::dict& getInterpreterLocals()
+	{
+		return locals;
+	}
+
+	static inline py::dict& getInterpreterGlobals()
+	{
+		return globals;
 	}
 
 private:
@@ -44,7 +51,10 @@ private:
 	std::filesystem::path wdir = "scripts";
 	std::wstring s_name;
 
-	inline static std::atomic<int> state;
+	static inline py::dict locals;
+	static inline py::dict globals;
+
+	std::atomic<int> state;
 	static py::module sys;
 	static bool intRunning;
 };

@@ -36,6 +36,8 @@ void processThread(std::atomic<int>* flags, void * data)
 	FILE* f = reinterpret_cast<FILE*>(int_ptr[0]);
 	AcquireDataOptions* opt = reinterpret_cast<AcquireDataOptions*>(int_ptr[1]);
 
+	py::dict locals = PyScript::getInterpreterLocals();
+
 	while (true)
 	{
 		while (CallbackPacket::getGlobalCBPStack()->empty() && flags->load() == THREAD_RUN)
@@ -90,12 +92,12 @@ void processThread(std::atomic<int>* flags, void * data)
 			td_mem_chunk.set(local_ns_table.data());
 
 			//TODO: Count data and send it to front end as a callback
-			if (CallBackRegistries::data_count_callback.ptr() && PyScript::getAtomicState())
+			/*if (CallBackRegistries::data_count_callback.ptr() && PyScript::getAtomicState())
 			{
 				py::gil_scoped_acquire acquire;
 				CallBackRegistries::data_count_callback(count, 1, ns);
 				py::gil_scoped_release release;
-			}
+			}*/
 
 			//Free data copy
 			free(dpacket.data);
@@ -108,6 +110,10 @@ void processThread(std::atomic<int>* flags, void * data)
 
 void controlThread(std::atomic<int>* flags, void* data)
 {
+	//Decode data - TODO: This should be automated
+	intptr_t* int_ptr = reinterpret_cast<intptr_t*>(data);
+	PyScript* script = reinterpret_cast<PyScript*>(int_ptr[1]);
+
 	int x = 0;
 
 	while (true)
@@ -118,20 +124,40 @@ void controlThread(std::atomic<int>* flags, void* data)
 		Timestamp ts = Timer::apiTimeSystemHRC();
 		CFlush::println(1, "Current Time: %s", CFlush::formatString("%02d:%02lld:%02lld", ts.hour, ts.min, ts.sec).c_str());
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-		if (CallBackRegistries::data_count_callback.ptr() && PyScript::getAtomicState())
+
+		try
 		{
-			try
+			//If script is not started this will skip
+			//Move out of this thread - only here for testing
+#pragma warning( push )
+#pragma warning( disable : 26444)
+			if (CallBackRegistries::data_count_callback.ptr() && script->getAtomicState())
 			{
 				py::gil_scoped_acquire acquire;
-				CallBackRegistries::data_count_callback(std::sin(x / 100.0f), int(x / 10.0), 0.1);
+				CallBackRegistries::data_count_callback(10 * std::sin(x++ / 10.0), x, 0.1);
 				py::gil_scoped_release release;
-				x++;
 			}
-			catch (py::error_already_set & eas)
-			{
-				std::cerr << eas.what() << std::endl;
-			}
+#pragma warning( pop )
+		}
+		catch (py::error_already_set & eas)
+		{
+			std::cerr << eas.what() << std::endl;
 		}
 	}
+	flags->store(THREAD_ENDED);
+}
+
+void userGUIThread(std::atomic<int>* flags, void* data)
+{
+	//Decode data - TODO: This should be automated
+	intptr_t* int_ptr = reinterpret_cast<intptr_t*>(data);
+	PyScript* script = reinterpret_cast<PyScript*>(int_ptr[0]);
+
+	PyScript::InitInterpreter();
+
+	script->operator()();
+
+	PyScript::DestInterpreter();
+
 	flags->store(THREAD_ENDED);
 }

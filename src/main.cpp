@@ -50,19 +50,11 @@ int main(int argc, char* argv[])
 	//Initialize default windows handle for operation
 	CFlush::Init();
 
-	//PyScript::InitInterpreter();
 	PyScript script("realtime_test.py");
 
 	//Redirect cerr and stderr to file
 	FILE* nstderr = NULL;
 	freopen_s(&nstderr, std::string("logs/" + GET_VERSION_STR() + ".log").c_str(), "w", stderr);
-
-	float64 datat[5] = {5.0, 1.0, 0.0, 1.0, 0.0};
-
-	static DataChunk<float64, 1> dd_mem_chunk(10, DEFAULT_DATA);
-	dd_mem_chunk.add(datat, 5);
-	//dd_mem_chunk.dis();
-	dd_mem_chunk.add(datat, 5);
 
 	//Redirect cout to window buffer (WinAPI)
 	OLstreambuf ols;
@@ -119,8 +111,8 @@ int main(int argc, char* argv[])
 
 	auto tid_0 = manager.addThread(acquireThread, &doptions);
 	auto tid_1 = manager.addThread(processThread, convertToIntPointer(f, &doptions));
-	auto tid_2 = manager.addThread(controlThread, convertToIntPointer(&data));
-	auto tid_3 = manager.addThread(script.getRaw(), &script);
+	auto tid_2 = manager.addThread(controlThread, convertToIntPointer(&data, &script));
+	auto tid_3 = manager.addThread(userGUIThread, convertToIntPointer(&script));
 
 	//PerfCount::PrintValidProcTimes();
 	PerfCount::Init();
@@ -154,8 +146,6 @@ int main(int argc, char* argv[])
 
 	//Always revert the .ini file to default for safety purposes and test only
 	IO::createIniFile("config\\default.ini");
-
-	//PyScript::DestInterpreter();
 
 	fclose(nstderr);
 	_close(fd);

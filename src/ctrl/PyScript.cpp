@@ -47,7 +47,7 @@ PyScript::~PyScript()
 	}
 }
 
-bool PyScript::operator()(py::object locals)
+bool PyScript::operator()()
 {
 	//Execute the script
 	if (script_body == nullptr)
@@ -56,16 +56,13 @@ bool PyScript::operator()(py::object locals)
 		return false;
 	}
 
-	py::scoped_interpreter si{}; //This prevents undefined behaviour when threading Init and Finalize
-	PyScript::intRunning = true;
-
 	if (PyScript::intRunning)
 	{
 		bool status = true;
 		state.store(1);
 		try
 		{
-			py::exec(script_body, py::globals(), locals);
+			py::exec(script_body, globals, locals);
 		}
 		catch(py::error_already_set & eas)
 		{
@@ -74,8 +71,7 @@ bool PyScript::operator()(py::object locals)
 		}
 		state.store(0);
 		//TODO: Change this to a signal instead of random waiting
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-		py::gil_scoped_acquire acquire;
+		//std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		return status;
 	}
 
@@ -95,25 +91,16 @@ bool PyScript::setWorkingDir(std::filesystem::path dir)
 	return false;
 }
 
-Tfunc PyScript::getRaw()
-{
-	auto l = [](std::atomic<int>* flags, void* a) -> void
-	{
-		(*(PyScript*)a)();
-		flags->store(THREAD_ENDED);
-	};
-
-	return l;
-}
-
 void PyScript::InitInterpreter()
 {
 	py::initialize_interpreter();
 
-	sys = py::module::import("sys");
+	globals = py::globals();
+
+	//sys = py::module::import("sys");
 
 	//Matplotlib requires argv[0] to be set to something, or will cause exception
-	auto out = sys.attr("argv").attr("insert")(0, "generic_script");
+	//auto out = sys.attr("argv").attr("insert")(0, "generic_script");
 
 	intRunning = true;
 }

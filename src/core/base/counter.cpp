@@ -8,7 +8,7 @@ typedef bool (*CompareFunc)(float64, float64);
 struct Cmpdata
 {
 	size_t index;
-	enum { RISING, FALLING } edge;
+	enum Edge{ RISING, FALLING } edge;
 };
 
 size_t waitForLimit(float64* data, size_t start, size_t size, float64 barrier, CompareFunc cmp)
@@ -48,31 +48,52 @@ Cmpdata waitForAny(float64* data, size_t start, size_t size, float64 barrier, fl
 	return cd;
 }
 
-uInt32 Counter::countPacket(float64 * data, size_t size, float64 barrier, float64 threshold)
+//TODO: Fix equalities
+std::tuple<uInt32, std::vector<size_t>> Counter::countPacket(float64 * data, size_t size, float64 barrier, float64 threshold)
 {
 	static float64 lastDataPoint = barrier + threshold;
-	Cmpdata compare;
+	static Cmpdata::Edge lastEdge = Cmpdata::RISING;
 
+
+	Cmpdata compare;
 	compare.index = 0;
 	uInt32 count = 0UL;
+	std::vector<size_t> where;
+	where.reserve(10); //When real tests are made change this for a likely value
 
-	//TODO: Fix this here
-	if (lastDataPoint < barrier - threshold && data[0] > barrier - threshold)
+	if (lastDataPoint < barrier - threshold && data[0] > barrier + threshold) [[unlikely]]
 	{
 		count++;
+		where.push_back(0);
 		compare.index = 1;
+	}
+	else if (lastDataPoint < barrier + threshold && lastDataPoint > barrier - threshold && lastEdge == Cmpdata::RISING) [[unlikely]]
+	{
+		compare.index = waitForLimit(data, 0, size, barrier + threshold, CMP_LARGER);
+		if (compare.index > size)
+		{
+			lastDataPoint = data[size - 1];
+			return std::make_pair(count, where);
+		}
+		else
+		{
+			where.push_back(compare.index);
+			count++;
+		}
 	}
 
 	while (true)
 	{
 		compare = waitForAny(data, compare.index, size, barrier, threshold);
+		lastEdge = compare.edge;
 		if (compare.index > size)
 		{
 			lastDataPoint = data[size - 1];
-			return count;
+			return std::make_pair(count, where);
 		}
 		else if (compare.edge == Cmpdata::RISING)
 		{
+			where.push_back(compare.index);
 			count++;
 		}
 	}

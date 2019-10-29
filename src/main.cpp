@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
 	//Convert all datatype pointers to intptr_t and then pass them to the required function or thread, unwrapping it later
 
 	auto tid_0 = manager.addThread(acquireThread, &doptions);
-	auto tid_1 = manager.addThread(processThread, convertToIntPointer(f, &doptions));
+	auto tid_1 = manager.addThread(processThread, convertToIntPointer(f, &doptions, &script));
 	auto tid_2 = manager.addThread(controlThread, convertToIntPointer(&data, &script));
 	auto tid_3 = manager.addThread(userGUIThread, convertToIntPointer(&script));
 

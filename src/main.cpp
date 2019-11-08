@@ -44,43 +44,16 @@
 //Create a sized buffer on the screen with autoscroll to present std::cout
 //Fix warnings
 //Use PyQt for the front-end
+//Create a requirements.txt file for python dependencies
 
-int main()
-{
-	FILE* f;
-	char buffer[128];
-	std::vector<float64> data;
-	fopen_s(&f, "data/rand_sin.csv", "r");
-	if (f != nullptr)
-	{
-		while (fgets(buffer, 128, f))
-		{
-			int x;
-			double y;
-			sscanf_s(buffer, "%d;%lf\n", &x, &y);
-			data.push_back(y);
-		}
-		fclose(f);
-	}
-
-	auto [count, places] = Counter::countPacket(data.data(), data.size(), 0.80, 0.1);
-	std::cout << count << std::endl;
-	std::cout << "At: ";
-	for (auto p : places)
-	{
-		std::cout << p << " : ";
-	}
-	std::cout << std::endl;
-
-	return 0;
-}
-
-int main0(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
 	//Initialize default windows handle for operation
 	CFlush::Init();
 
-	PyScript script("realtime_test.py");
+	//PyScript script("realtime_test.py");
+	PyScript::setWorkingDir("generated_ui");
+	PyScript script("mw.py");
 
 	//Redirect cerr and stderr to file
 	FILE* nstderr = NULL;

@@ -26,7 +26,7 @@ public:
 
 	bool operator()();
 
-	bool setWorkingDir(std::filesystem::path dir = "scripts");
+	static bool setWorkingDir(std::filesystem::path dir = "scripts");
 
 	static void InitInterpreter();
 	static void DestInterpreter();
@@ -48,7 +48,7 @@ public:
 private:
 	py::module module;
 	char* script_body = nullptr;
-	std::filesystem::path wdir = "scripts";
+	static inline std::filesystem::path wdir = "scripts";
 	std::wstring s_name;
 
 	static inline py::dict locals;

@@ -35,24 +35,11 @@ public:
 		return state.load();
 	}
 
-	static inline py::dict& getInterpreterLocals()
-	{
-		return locals;
-	}
-
-	static inline py::dict& getInterpreterGlobals()
-	{
-		return globals;
-	}
-
 private:
 	py::module module;
 	char* script_body = nullptr;
 	static inline std::filesystem::path wdir = "scripts";
 	std::wstring s_name;
-
-	static inline py::dict locals;
-	static inline py::dict globals;
 
 	std::atomic<int> state;
 	static py::module sys;

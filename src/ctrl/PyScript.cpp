@@ -62,7 +62,7 @@ bool PyScript::operator()()
 		state.store(1);
 		try
 		{
-			py::exec(script_body, globals, locals);
+			py::exec(script_body, py::globals(), py::object());
 		}
 		catch(py::error_already_set & eas)
 		{
@@ -94,8 +94,6 @@ bool PyScript::setWorkingDir(std::filesystem::path dir)
 void PyScript::InitInterpreter()
 {
 	py::initialize_interpreter();
-
-	globals = py::globals();
 
 	//sys = py::module::import("sys");
 

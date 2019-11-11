@@ -52,12 +52,18 @@ int main(int argc, char* argv[])
 	CFlush::Init();
 
 	//PyScript script("realtime_test.py");
-	PyScript::setWorkingDir("generated_ui");
+	PyScript::setWorkingDir("scripts/gui");
 	PyScript script("mw.py");
 
 	//Redirect cerr and stderr to file
 	FILE* nstderr = NULL;
-	freopen_s(&nstderr, std::string("logs/" + GET_VERSION_STR() + ".log").c_str(), "w", stderr);
+	const std::string VERSION = GET_VERSION_STR();
+	freopen_s(&nstderr, std::string("logs/" + VERSION + ".log").c_str(), "w", stderr);
+	if (nstderr == nullptr)
+	{
+		std::cerr << "IO error: could not find/open the specified file: " << "logs/" + VERSION + ".log" << std::endl;
+		return -1;
+	}
 
 	//Redirect cout to window buffer (WinAPI)
 	OLstreambuf ols;
@@ -77,34 +83,27 @@ int main(int argc, char* argv[])
 	IO::IniFileData data = IO::readIniFile("config\\default.ini");
 
 	AcquireDataOptions doptions;
-	TaskProperties properties;
 
-	properties.name = "task0";
-	properties.channel.name = data["AcquireSettings"]["default_channel"].c_str();
-	properties.channel.assignedChannel = data["AcquireSettings"]["default_assigned"].c_str();
-	properties.channel.channelUnits = atoi(data["AcquireSettings"]["default_units"].c_str());
-	properties.channel.customScaleName = "";
-	properties.channel.minValue = atof(data["AcquireSettings"]["default_min"].c_str());
-	properties.channel.maxValue = atof(data["AcquireSettings"]["default_max"].c_str());
+	doptions.tproperties.name = "task0";
+	doptions.tproperties.channel.name = data["AcquireSettings"]["default_channel"].c_str();
+	doptions.tproperties.channel.assignedChannel = data["AcquireSettings"]["default_assigned"].c_str();
+	doptions.tproperties.channel.channelUnits = atoi(data["AcquireSettings"]["default_units"].c_str());
+	doptions.tproperties.channel.customScaleName = "";
+	doptions.tproperties.channel.minValue = atof(data["AcquireSettings"]["default_min"].c_str());
+	doptions.tproperties.channel.maxValue = atof(data["AcquireSettings"]["default_max"].c_str());
 
-	properties.timer.activeEdge = DAQmx_Val_Rising;
-	properties.timer.sampleMode = DAQmx_Val_ContSamps;
-	properties.timer.sampleRate = atof(data["AcquireSettings"]["default_timer"].c_str());
-	properties.timer.samplesPerChannel = atoi(data["AcquireSettings"]["default_spc"].c_str());
-	properties.timer.source = "";
-
-	doptions.tproperties = properties;
+	doptions.tproperties.timer.activeEdge = DAQmx_Val_Rising;
+	doptions.tproperties.timer.sampleMode = DAQmx_Val_ContSamps;
+	doptions.tproperties.timer.sampleRate = atof(data["AcquireSettings"]["default_timer"].c_str());
+	doptions.tproperties.timer.samplesPerChannel = atoi(data["AcquireSettings"]["default_spc"].c_str());
+	doptions.tproperties.timer.source = "";
 
 	FILE* f;
-	fopen_s(&f, std::string(data["IOLocation"]["relative_path"] + "/" 
-		+ data["IOLocation"]["name"] + "." 
-		+ data["IOLocation"]["extension"]).c_str(), "w");
+	std::string file_loc = std::string(data["IOLocation"]["relative_path"] + "/" + data["IOLocation"]["name"] + "." + data["IOLocation"]["extension"]);
+	fopen_s(&f, file_loc.c_str(), "w");
 	if (f == nullptr)
 	{
-		std::cerr << "IO error: could not find/open the specified file: " 
-			<< std::string(data["IOLocation"]["relative_path"] + "/" 
-				+ data["IOLocation"]["name"] + "." 
-				+ data["IOLocation"]["extension"]) << std::endl;
+		std::cerr << "IO error: could not find/open the specified file: " << file_loc << std::endl;
 		return -1;
 	}
 	fprintf(f, "Packet,Point,Data,Timestamp,\n");

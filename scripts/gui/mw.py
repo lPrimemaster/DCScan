@@ -1,28 +1,45 @@
 import sys
 import platform
 import struct
+import os
 
 if not len(sys.argv):
 	sys.argv.append('mw.py')
 	sys.path.append('./generated_ui/')
-	# sys.path.append('%LocalAppData%/Programs/Python/Python37-32/python37.zip')
-	# sys.path.append('%LocalAppData%/Programs/Python/Python37-32/DLLs')
-	# sys.path.append('%LocalAppData%/Programs/Python/Python37-32')
-	# sys.path.append('%LocalAppData%/Programs/Python/Python37-32/Lib')
-	# sys.path.append('%LocalAppData%/Programs/Python/Python37-32/Lib/site-packages')
+	sys.path.append('./scripts/')
+	sys.path.append('./scripts/gui/')
 	
-
+# Qt Visuals
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QTimer
+
+# Math and data management
 import numpy as np
+import pandas as pd
 import pyqtgraph as pg
+
+# Misc
 import functools
+import inspect
+
+# Embedded operation imports from C++
+from DCS_Common import *
+import DCS_Time as dcst
+import DCS_Data as dcsd
+
+# Data configuration in memory
+import variables as vars
+import data_callback as dcb
 
 # The libs are being inited from another version of python inside vs ??? -> where is <Python.h> ?
+sys.stderr.write('Script started at: {}\n' .format(dcst.systemHRC()))
 sys.stderr.write('Python version: {}\n' .format(platform.python_version()))
-sys.stderr.write('Arch: {}\n' .format(struct.calcsize("P") * 8))
+sys.stderr.write('Architecture: {}-bit\n' .format(struct.calcsize("P") * 8))
 sys.stderr.write('Executable location: {}\n' .format(sys.executable))
 sys.stderr.write('System path: {}\n' .format(sys.path))
+
+# Register C++ callbacks
+dcsd.registerDataCallback('data_callback', 'data_callback')
 
 xz = 0
 
@@ -33,7 +50,7 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
 
         #Load the UI Page
-        uic.loadUi('H:/Data/C++/DCScan/DCScan/generated_ui/mainWindow.ui', self)
+        uic.loadUi('generated_ui/mainWindow.ui', self)
 		
         x = np.random.normal(size=1000)
         y = np.random.normal(size=1000)
@@ -43,10 +60,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setup()
         self.plot(x, y)
 
-    def timedEvt(self, ms):
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.onClick)
-        self.timer.start(ms)
+        self.timer = dict()
+
+    def addTimedEvent(self, name, ms=1000):
+        self.timer[name] = QTimer()
+        self.timer[name].timeout.connect(getattr(self, name))
+        self.timer[name].start(ms)
+
+    def stopTimedEvent(self, name):
+    	self.timer[name].stop()
 
     def setup(self):
         vw = self.graphWidget.getViewWidget()
@@ -64,6 +86,9 @@ class MainWindow(QtWidgets.QMainWindow):
         left.setGrid(100)
         left.setTickSpacing(1, 0.5)
 
+    def getData(self):
+    	pass
+
     def plot(self, x, y):
         self.plt.plot(x, y, pen=None, symbol='o')  # setting pen=None disables line drawing
 
@@ -79,7 +104,10 @@ def main():
 	app = QtWidgets.QApplication(sys.argv)
 	main = MainWindow()
 	main.show()
-	main.timedEvt(1 / 30) # 30 tps
+
+	# Add events
+	main.addTimedEvent('onClick', 33.3) # 30 tps
+
 	sys.exit(app.exec_())
 
 if __name__ == '__main__':         

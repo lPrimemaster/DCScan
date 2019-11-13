@@ -35,7 +35,7 @@ void acquireThread(std::atomic<int>* flags, void * data)
 void processThread(std::atomic<int>* flags, void * data)
 {
 	auto [f, opt, script] = from_intPointer(3, FILE*, AcquireDataOptions*, PyScript*)(reinterpret_cast<intptr_t*>(data));
-
+	int x = 0;
 	while (true)
 	{
 		while (CallbackPacket::getGlobalCBPStack()->empty() && flags->load() == THREAD_RUN)
@@ -88,7 +88,7 @@ void processThread(std::atomic<int>* flags, void * data)
 			//TODO: Get count width to analyse possible stacked data (pile up)
 			//FIX: Timing values are calculated as soon as the rising edge is triggered - Data peaks are probably very symmetric!!
 			//DONE: Calculate count timing according to place where it was detected
-			auto [count, places] = Counter::countPacket(dpacket.data, dpacket.data_size, 5.0, 1.0);
+			auto [count, places] = Counter::countPacket(dpacket.data, dpacket.data_size, 1.0, 0.5);
 			std::vector<long long> inplace_ns;
 			std::vector<Timestamp> inplace_ts;
 			inplace_ns.reserve(places.size());
@@ -98,18 +98,18 @@ void processThread(std::atomic<int>* flags, void * data)
 			std::for_each(inplace_ns.begin(), inplace_ns.end(), [&](const long long& val) { inplace_ts.push_back(Timer::apiTimeSystemHRC_NanoToTimestamp(val)); });
 			
 			//FIX: This loses the time lost between datapacket interchange
-			auto delta_ns = *inplace_ns.end() - *inplace_ns.begin();
+			auto delta_ns = count != 0 ? *(inplace_ns.end() - 1) - *inplace_ns.begin() : 0;
 
 			try
 			{
 				if (CallBackRegistries::data_count_callback.ptr() && script->getAtomicState())
 				{
 					py::gil_scoped_acquire acquire;
-					CallBackRegistries::data_count_callback(count, 0 /* ANGLE WILL BE HERE */, delta_ns);
+					CallBackRegistries::data_count_callback(count, x++ /* ANGLE WILL BE HERE */, delta_ns);
 					py::gil_scoped_release release;
 				}
 			}
-			catch (py::error_already_set & eas)
+			catch (py::error_already_set& eas)
 			{
 				std::cerr << eas.what() << std::endl;
 			}
@@ -138,7 +138,7 @@ void controlThread(std::atomic<int>* flags, void* data)
 		CFlush::println(1, "Current Time: %s", CFlush::formatString("%02d:%02lld:%02lld", ts.hour, ts.min, ts.sec).c_str());
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-#if 1
+#if 0
 		try
 		{
 			//If script is not started this will skip
@@ -149,6 +149,7 @@ void controlThread(std::atomic<int>* flags, void* data)
 				CallBackRegistries::data_count_callback(10 * std::sin(x++ / 10.0), x, 0.1);
 				py::gil_scoped_release release;
 			}
+			if (x > 100) x = 0;
 		}
 		catch (py::error_already_set & eas)
 		{

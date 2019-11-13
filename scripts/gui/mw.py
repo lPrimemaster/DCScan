@@ -19,6 +19,7 @@ import pandas as pd
 import pyqtgraph as pg
 
 # Misc
+import pprint as pp
 import functools
 import inspect
 
@@ -51,16 +52,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         #Load the UI Page
         uic.loadUi('generated_ui/mainWindow.ui', self)
-		
-        x = np.random.normal(size=1000)
-        y = np.random.normal(size=1000)
-
-        self.button_start.clicked.connect(self.onClick)
 
         self.setup()
-        self.plot(x, y)
 
         self.timer = dict()
+
+    def addButtonCallback(self, button, callback):
+    	getattr(self, button).clicked.connect(getattr(self, callback))
 
     def addTimedEvent(self, name, ms=1000):
         self.timer[name] = QTimer()
@@ -87,28 +85,29 @@ class MainWindow(QtWidgets.QMainWindow):
         left.setTickSpacing(1, 0.5)
 
     def getData(self):
-    	pass
+    	cbd_list = list(vars.DReserved_totals.values())
+    	list_size = len(cbd_list) # This is the linear angle entry in dict
+    	x = np.arange(list_size)
+    	count = [i[0] for i in cbd_list]
+    	# sys.stderr.write(pp.pformat(count))
+    	self.plt.clear()
+    	self.plot(x, count)
 
     def plot(self, x, y):
         self.plt.plot(x, y, pen=None, symbol='o')  # setting pen=None disables line drawing
-
-    def onClick(self):
-        global xz
-        x = np.linspace(-np.pi + xz * 0.01, np.pi + xz * 0.01, 1000)
-        y = np.sin(x)
-        xz += 1
-        self.plt.clear()
-        self.plot(x, y)
 
 def main():
 	app = QtWidgets.QApplication(sys.argv)
 	main = MainWindow()
 	main.show()
 
-	# Add events
-	main.addTimedEvent('onClick', 33.3) # 30 tps
+	dcsd.registerDataCallback('data_callback', 'data_callback')
 
-	sys.exit(app.exec_())
+	# Add events
+	# main.addButtonCallback('button_start', 'onClick')
+	main.addTimedEvent('getData', 100) # 10 tps
+	code = app.exec_()
+	sys.exit(code)
 
 if __name__ == '__main__':         
     main()

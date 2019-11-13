@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
 
 	auto tid_4 = manager.addThread(PerfCount::Record, nullptr);
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(60000));
+	std::this_thread::sleep_for(std::chrono::milliseconds(600000));
 
 	manager.joinThreadSync(tid_0);
 

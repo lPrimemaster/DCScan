@@ -3,9 +3,9 @@
 import variables
 
 def data_callback(count_r, angle_r, delta_r):
-	if angle_r not in variables.__DReserved_totals:
-		variables.__DReserved_totals[angle_r] = variables.CBData(count_r, delta_r)
+	if angle_r not in variables.DReserved_totals:
+		variables.DReserved_totals[angle_r] = variables.CBData(count_r, delta_r)
 	else:
-		oldvals_c = variables.__DReserved_totals[angle_r].count
-		oldvals_d = variables.__DReserved_totals[angle_r].delta
-		variables.__DReserved_totals[angle_r] =  variables.CBData(count_r + oldvals_c, delta_r + oldvals_d)
+		oldvals_c = variables.DReserved_totals[angle_r].count
+		oldvals_d = variables.DReserved_totals[angle_r].delta
+		variables.DReserved_totals[angle_r] =  variables.CBData(count_r + oldvals_c, delta_r + oldvals_d)

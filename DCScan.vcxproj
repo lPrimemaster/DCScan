@@ -22,7 +22,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{9F9C6394-613C-499F-A3D1-196B3E34A299}</ProjectGuid>
     <RootNamespace>DCScan</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -78,13 +78,13 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>deps\DAQmx ANSI C Dev\include;deps\pybind11\include;deps\libcurl;C:\Users\cesar\AppData\Local\Programs\Python\Python37-32\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>deps\DAQmx ANSI C Dev\include;deps\pybind11\include;deps\libcurl;%LocalAppData%\Programs\Python\Python37-32\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_API_EXPORTING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>deps\DAQmx ANSI C Dev\lib\msvc;deps\libcurl;C:\Users\cesar\AppData\Local\Programs\Python\Python37-32\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>deps\DAQmx ANSI C Dev\lib\msvc;deps\libcurl;%LocalAppData%\Programs\Python\Python37-32\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>NIDAQmx.lib;pdh.lib;libcurl.lib;python37.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>

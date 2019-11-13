@@ -30,7 +30,7 @@ print("Script started at: %s\n" % dcst.systemHRC())
 dcsd.registerDataCallback('data_callback', 'data_callback')
 
 def handle_close(evt):
-	data_frame = pd.DataFrame(list(vars.__DReserved_totals.items()), columns = ['Angle', 'CBData'])
+	data_frame = pd.DataFrame(list(vars.DReserved_totals.items()), columns = ['Angle', 'CBData'])
 	df = pd.concat([data_frame.iloc[:, :1], data_frame['CBData'].apply(pd.Series)], axis=1)
 	df.columns = ['Angle', 'Event Frequency', 'UNIX Time (ns)']
 	df.set_index('Angle', inplace=True)
@@ -56,8 +56,8 @@ plt.show()
 x = 0
 while True:
 	while x < 149:
-		if x in vars.__DReserved_totals:
-			patches[x].set_height(vars.__DReserved_totals[x].count)
+		if x in vars.DReserved_totals:
+			patches[x].set_height(vars.DReserved_totals[x].count)
 		x += 1
 	x = 0
 	plt.pause(0.5)

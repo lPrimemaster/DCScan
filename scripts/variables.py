@@ -4,4 +4,4 @@
 import collections
 CBData = collections.namedtuple('CBData', ['count', 'delta'])
 
-__DReserved_totals = dict()
+DReserved_totals = dict()

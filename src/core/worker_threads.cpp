@@ -86,6 +86,7 @@ void processThread(std::atomic<int>* flags, void * data)
 			//Noise threshold is equal bilateraly - 1.0 => TODO: Make this unilateral specific
 			//TODO: Normalize counts per unit time
 			//TODO: Get count width to analyse possible stacked data (pile up)
+			//TODO: Calculate peak time
 			//FIX: Timing values are calculated as soon as the rising edge is triggered - Data peaks are probably very symmetric!!
 			//DONE: Calculate count timing according to place where it was detected
 			auto [count, places] = Counter::countPacket(dpacket.data, dpacket.data_size, 1.0, 0.5);

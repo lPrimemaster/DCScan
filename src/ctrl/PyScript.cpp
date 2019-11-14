@@ -70,8 +70,6 @@ bool PyScript::operator()()
 			status = false;
 		}
 		state.store(0);
-		//TODO: Change this to a signal instead of random waiting
-		//std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		return status;
 	}
 
@@ -94,12 +92,6 @@ bool PyScript::setWorkingDir(std::filesystem::path dir)
 void PyScript::InitInterpreter()
 {
 	py::initialize_interpreter();
-
-	//sys = py::module::import("sys");
-
-	//Matplotlib requires argv[0] to be set to something, or will cause exception
-	//auto out = sys.attr("argv").attr("insert")(0, "generic_script");
-
 	intRunning = true;
 }
 

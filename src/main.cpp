@@ -39,12 +39,13 @@
 //Motors communication / control implementation -- DONE
 //Api implementation for use in external GUI -- DONE
 //Fix an error with thread concurrency at ThreadManager.cpp : 67 -> pool erased -- DONE
+//Use PyQt for the front-end -- DONE
 //Create a system where there can be more than one .ini file, for multiple configurations
 //Fix directory non existent for data or config files
 //Create a sized buffer on the screen with autoscroll to present std::cout
 //Fix warnings
-//Use PyQt for the front-end
 //Create a requirements.txt file for python dependencies
+//External Events readout
 
 int main(int argc, char* argv[])
 {
@@ -124,7 +125,7 @@ int main(int argc, char* argv[])
 
 	auto tid_4 = manager.addThread(PerfCount::Record, nullptr);
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(600000));
+	std::this_thread::sleep_for(std::chrono::seconds(600));
 
 	manager.joinThreadSync(tid_0);
 

@@ -46,13 +46,14 @@
 //Fix warnings
 //Create a requirements.txt file for python dependencies
 //External Events readout
+//Set Engine limits (angle limit)
+//Normalize angle for dict -> real angle value in axis
 
 int main(int argc, char* argv[])
 {
 	//Initialize default windows handle for operation
 	CFlush::Init();
 
-	//PyScript script("realtime_test.py");
 	PyScript::setWorkingDir("scripts/gui");
 	PyScript script("mw.py");
 

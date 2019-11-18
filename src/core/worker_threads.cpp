@@ -32,23 +32,52 @@ void acquireThread(std::atomic<int>* flags, void * data)
 	flags->store(THREAD_ENDED);
 }
 
+//This might be system dependent
+#define CALCULATE_MEAN_ACQTIMEWAIT
+
 void processThread(std::atomic<int>* flags, void * data)
 {
 	auto [f, opt, script] = from_intPointer(3, FILE*, AcquireDataOptions*, PyScript*)(reinterpret_cast<intptr_t*>(data));
 	int x = 0;
 	while (true)
 	{
+#ifdef CALCULATE_MEAN_ACQTIMEWAIT
+		static int cycle = 1;
+		static long double meanNanos = 0;
+		static long double syncNanos = 10; //Default 10 ns
+		static long long useNanos = 10;
+
+		//Calculate here - eliminate timing overhead
+		long double weighted_diff = (syncNanos - meanNanos) / cycle++;
+		(syncNanos - meanNanos) > weighted_diff ? useNanos -= weighted_diff : useNanos += weighted_diff;
+		meanNanos += weighted_diff;
+
+		long long lastNanos = Timer::apiTimeSystemHRC_Nano();
+#endif
+		int stallCycles = 0;
+
 		while (CallbackPacket::getGlobalCBPStack()->empty() && flags->load() == THREAD_RUN)
 		{
-			//TODO: Make this wait value based on the frequency of acquisition
-			std::this_thread::sleep_for(std::chrono::microseconds(10));
+#ifdef CALCULATE_MEAN_ACQTIMEWAIT
+			std::this_thread::sleep_for(std::chrono::nanoseconds(useNanos));
+			stallCycles++; //This is an overhead here
+#else
+			//This is temporary
+			std::this_thread::yield();
+			stallCycles++; //This is kind of fine here
+#endif
 		}
+#ifdef CALCULATE_MEAN_ACQTIMEWAIT
+		syncNanos = Timer::apiTimeSystemHRC_Nano() - lastNanos;
+		std::cerr << "Mean nanos: [" << meanNanos << " ns]\nCycle nanos: [" << syncNanos << " ns]" << std::endl;
+#endif
+		std::cerr << "Cycle wait count : [#" << stallCycles << "]" << std::endl;
 
 		if (flags->load() == THREAD_HALT && CallbackPacket::getGlobalCBPStack()->empty())
 			break;
 
 
-		//Get ready to process data
+		//Get ready to process data - FIFO Style
 		CallbackPacket::getGlobalCBPMutex()->lock();
 		auto cbp_stack = CallbackPacket::getGlobalCBPStack();
 		auto dpacket = cbp_stack->front();

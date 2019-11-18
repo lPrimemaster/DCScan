@@ -32,7 +32,6 @@ import DCS_Data as dcsd
 import variables as vars
 import data_callback as dcb
 
-# The libs are being inited from another version of python inside vs ??? -> where is <Python.h> ?
 sys.stderr.write('Script started at: {}\n' .format(dcst.systemHRC()))
 sys.stderr.write('Python version: {}\n' .format(platform.python_version()))
 sys.stderr.write('Architecture: {}-bit\n' .format(struct.calcsize("P") * 8))
@@ -60,6 +59,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def addButtonCallback(self, button, callback):
     	getattr(self, button).clicked.connect(getattr(self, callback))
 
+    # TODO: func name should differ from dict name
     def addTimedEvent(self, name, ms=1000):
         self.timer[name] = QTimer()
         self.timer[name].timeout.connect(getattr(self, name))
@@ -86,7 +86,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def getData(self):
     	cbd_list = list(vars.DReserved_totals.values())
-    	list_size = len(cbd_list) # This is the linear angle entry in dict
+    	list_size = len(cbd_list) # This is the angle entry in dict (normalized)
     	x = np.arange(list_size)
     	count = [i[0] for i in cbd_list]
     	# sys.stderr.write(pp.pformat(count))

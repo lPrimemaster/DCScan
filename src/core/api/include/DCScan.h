@@ -83,3 +83,9 @@ PYBIND11_EMBEDDED_MODULE(DCS_Data, m)
 
 	m.def("registerDataCallback", &registerDataCounter);
 }
+
+//Backend Control Module
+PYBIND11_EMBEDDED_MODULE(DCS_Control, m)
+{
+	m.def("setServerAcquireState", &setAcquisitionState);
+}

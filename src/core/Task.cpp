@@ -9,6 +9,7 @@ Task::Task(const std::string& taskname) : name(taskname)
 	if (!handleError(error, "Task()"))
 	{
 		std::cerr << "Initializing task " << taskname << std::endl;
+		Task::registeredTasks.emplace(name, this);
 	}
 }
 
@@ -19,24 +20,27 @@ Task::~Task()
 		DAQmxStopTask(handle);
 		DAQmxClearTask(handle);
 		std::cerr << "Ending task " << name << std::endl;
+		Task::registeredTasks.erase(name);
 	}
 }
 
-void Task::start() const
+void Task::start()
 {
 	int32 error = DAQmxStartTask(handle);
 	if (!handleError(error, "Task::start()"))
 	{
 		std::cerr << "Starting task " << name << std::endl;
+		is_running = true;
 	}
 }
 
-void Task::stop() const
+void Task::stop()
 {
 	int32 error = DAQmxStopTask(handle);
 	if (!handleError(error, "Task::stop()"))
 	{
 		std::cerr << "Stopping task " << name << std::endl;
+		is_running = false;
 	}
 }
 
@@ -109,4 +113,9 @@ void Task::addEventCallback(DECHandler callback, void * callbackData)
 	{
 		std::cerr << "Task " << name << " - Registered Event Callback: DEC" << std::endl;
 	}
+}
+
+Task* Task::GetRegisteredTask(std::string name)
+{
+	return registeredTasks[name];
 }

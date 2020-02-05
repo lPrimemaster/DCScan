@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <chrono>
+#include <map>
 #include <NIDAQmx.h>
 
 typedef int32(__cdecl *ENCHandler)(TaskHandle taskHandle, int32 everyNsamplesEventType, uInt32 nSamples, void *callbackData);
@@ -40,11 +41,13 @@ class Task
 public:
 	enum ChannelType : int;
 
+	using TMap = std::map<std::string, Task*>;
+
 	Task(const std::string& taskname);
 	~Task();
 
-	void start() const;
-	void stop()  const;
+	void start();
+	void stop();
 	
 	void addChannel(ChannelType type, TaskProperties::Channel properties);
 	void addTimer(TaskProperties::Timer properties);
@@ -58,10 +61,21 @@ public:
 		CountEdgeChannel
 	};
 
+	static Task* GetRegisteredTask(std::string name);
+
+	inline bool isRunning() const
+	{
+		return is_running;
+	}
+
 private:
 	std::string name;
 	TaskHandle handle;
 
 	TaskProperties properties;
+
+	bool is_running = false;
+
+	inline static TMap registeredTasks;
 };
 

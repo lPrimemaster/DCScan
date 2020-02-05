@@ -40,3 +40,5 @@ struct CallBackRegistries
 int32 __cdecl EveryNCallback(TaskHandle taskHandle, int32 everyNsamplesEventType, uInt32 nSamples, void *callbackData);
 
 void registerDataCounter(std::string function, std::string module);
+
+void setAcquisitionState(int state);

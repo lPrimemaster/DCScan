@@ -32,6 +32,9 @@ import DCS_Data as dcsd
 import variables as vars
 import data_callback as dcb
 
+# Control Module
+import backend_handler as bh
+
 sys.stderr.write('Script started at: {}\n' .format(dcst.systemHRC()))
 sys.stderr.write('Python version: {}\n' .format(platform.python_version()))
 sys.stderr.write('Architecture: {}-bit\n' .format(struct.calcsize("P") * 8))
@@ -41,34 +44,43 @@ sys.stderr.write('System path: {}\n' .format(sys.path))
 # Register C++ callbacks
 dcsd.registerDataCallback('data_callback', 'data_callback')
 
-xz = 0
-
 class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, *args, **kwargs):
     	
         super(MainWindow, self).__init__(*args, **kwargs)
 
-        #Load the UI Page
+        # Load the UI Page
         uic.loadUi('generated_ui/mainWindow.ui', self)
 
-        self.setup()
-
+        # Setup timers
         self.timer = dict()
+
+        # Setup backend handler
+        self.serverHandler = bh.BHandler()
+
+        # Setup the rest
+        self.setup()
 
     def addButtonCallback(self, button, callback):
     	getattr(self, button).clicked.connect(getattr(self, callback))
 
-    # TODO: func name should differ from dict name
+    def addButtonCallbackAnonymous(self, button, callback):
+    	getattr(self, button).clicked.connect(callback)
+
     def addTimedEvent(self, name, ms=1000):
         self.timer[name] = QTimer()
         self.timer[name].timeout.connect(getattr(self, name))
-        self.timer[name].start(ms)
+        # self.timer[name].start(ms) -- DONT START BY DEFAULT!
+
+    def startTimedEvent(self, name, ms=1000):
+    	self.timer[name].start()
 
     def stopTimedEvent(self, name):
     	self.timer[name].stop()
 
     def setup(self):
+		# Setup graph
         vw = self.graphWidget.getViewWidget()
 
         l = pg.GraphicsLayout()
@@ -84,30 +96,39 @@ class MainWindow(QtWidgets.QMainWindow):
         left.setGrid(100)
         left.setTickSpacing(1, 0.5)
 
+        # Setup Async Events
+        self.addTimedEvent('getData', 50) # 20 tps
+
+        # Setup buttons
+        self.addButtonCallbackAnonymous('button_start', lambda: (self.startTimedEvent('getData', 50), self.serverHandler.startServerAcquisition()))
+        self.addButtonCallbackAnonymous('button_pause', lambda: (self.stopTimedEvent('getData')))
+        self.addButtonCallbackAnonymous('button_reset', lambda: (self.stopTimedEvent('getData'), self.serverHandler.discardCounts(), self.plt.clear()))
+        self.addButtonCallbackAnonymous('button_stop' , lambda: (self.stopTimedEvent('getData'), self.serverHandler.stopServerAcquisition()))
+        self.addButtonCallbackAnonymous('button_exit' , lambda: (self.serverHandler.signalTerminate(), QtWidgets.QApplication.quit()))
+
     def getData(self):
-    	cbd_list = list(vars.DReserved_totals.values())
-    	list_size = len(cbd_list) # This is the angle entry in dict (normalized)
-    	x = np.arange(list_size)
-    	count = [i[0] for i in cbd_list]
-    	# sys.stderr.write(pp.pformat(count))
-    	self.plt.clear()
-    	self.plot(x, count)
+        cbd_list = list(vars.DReserved_totals.values())
+        list_size = len(cbd_list) # This is the angle entry in dict (normalized)
+        cbd_first_key = 0
+        if list_size != 0:
+            cbd_first_key = list(vars.DReserved_totals.keys())[0]
+
+        x = np.arange(cbd_first_key, list_size + cbd_first_key)
+        count = [i[0] for i in cbd_list]
+        self.plt.clear()
+        self.plot(x, count)
 
     def plot(self, x, y):
         self.plt.plot(x, y, pen=None, symbol='o')  # setting pen=None disables line drawing
 
 def main():
+	dcsd.registerDataCallback('data_callback', 'data_callback')
+
 	app = QtWidgets.QApplication(sys.argv)
 	main = MainWindow()
 	main.show()
-
-	dcsd.registerDataCallback('data_callback', 'data_callback')
-
-	# Add events
-	# main.addButtonCallback('button_start', 'onClick')
-	main.addTimedEvent('getData', 100) # 10 tps
 	code = app.exec_()
-	sys.exit(code)
+	QtWidgets.QApplication.quit()
 
 if __name__ == '__main__':         
     main()

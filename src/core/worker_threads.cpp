@@ -20,14 +20,15 @@ void acquireThread(std::atomic<int>* flags, void * data)
 	task.addTimer(ado->tproperties.timer);
 	task.addEventCallback(EveryNCallback, nullptr, ado->tproperties.timer.samplesPerChannel, 0);
 
-	task.start(); //This marks the starting time of acquisition (NI-DAQmx reference manual)
+	//task.start(); //This marks the starting time of acquisition (NI-DAQmx reference manual)
 
+	//TODO: This is just useless, make a dealocation on the registered tasks instead of being lazy
 	while (flags->load() == THREAD_RUN)
 	{
 		std::this_thread::yield();
 	}
 
-	task.stop();
+	//task.stop();
 
 	flags->store(THREAD_ENDED);
 }
@@ -69,9 +70,9 @@ void processThread(std::atomic<int>* flags, void * data)
 		}
 #ifdef CALCULATE_MEAN_ACQTIMEWAIT
 		syncNanos = Timer::apiTimeSystemHRC_Nano() - lastNanos;
-		std::cerr << "Mean nanos: [" << meanNanos << " ns]\nCycle nanos: [" << syncNanos << " ns]" << std::endl;
+		//std::cerr << "Mean nanos: [" << meanNanos << " ns]\nCycle nanos: [" << syncNanos << " ns]" << std::endl;
 #endif
-		std::cerr << "Cycle wait count : [#" << stallCycles << "]" << std::endl;
+		//std::cerr << "Cycle wait count : [#" << stallCycles << "]" << std::endl;
 
 		if (flags->load() == THREAD_HALT && CallbackPacket::getGlobalCBPStack()->empty())
 			break;
@@ -127,7 +128,7 @@ void processThread(std::atomic<int>* flags, void * data)
 			std::for_each(places.begin(), places.end(), [&](const size_t& val) { inplace_ns.push_back(getLocal_ns(val)); });
 			std::for_each(inplace_ns.begin(), inplace_ns.end(), [&](const long long& val) { inplace_ts.push_back(Timer::apiTimeSystemHRC_NanoToTimestamp(val)); });
 			
-			//FIX: This loses the time lost between datapacket interchange
+			//FIX: This loses the time lost between datapacket interchange (??? what is this ? 05/02/2020)
 			auto delta_ns = count != 0 ? *(inplace_ns.end() - 1) - *inplace_ns.begin() : 0;
 
 			try

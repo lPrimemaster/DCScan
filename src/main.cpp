@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
 
 	AcquireDataOptions doptions;
 
-	doptions.tproperties.name = "task0";
+	doptions.tproperties.name = "mainDataTask";
 	doptions.tproperties.channel.name = data["AcquireSettings"]["default_channel"].c_str();
 	doptions.tproperties.channel.assignedChannel = data["AcquireSettings"]["default_assigned"].c_str();
 	doptions.tproperties.channel.channelUnits = atoi(data["AcquireSettings"]["default_units"].c_str());

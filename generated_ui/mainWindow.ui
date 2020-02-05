@@ -102,21 +102,33 @@ QMenu::item:pressed
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalSide">
+     <item alignment="Qt::AlignHCenter">
+      <widget class="QLabel" name="label_control">
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Control</string>
+       </property>
+      </widget>
+     </item>
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <layout class="QGridLayout" name="gridLayout_2">
          <item row="1" column="1">
-          <widget class="QPushButton" name="button_pause">
+          <widget class="QPushButton" name="button_reset">
            <property name="text">
-            <string>Pause</string>
+            <string>Reset</string>
            </property>
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QPushButton" name="button_stop">
+          <widget class="QPushButton" name="button_pause">
            <property name="text">
-            <string>Stop</string>
+            <string>Pause</string>
            </property>
           </widget>
          </item>
@@ -128,9 +140,9 @@ QMenu::item:pressed
           </widget>
          </item>
          <item row="1" column="0">
-          <widget class="QPushButton" name="button_resume">
+          <widget class="QPushButton" name="button_stop">
            <property name="text">
-            <string>Resume</string>
+            <string>Stop</string>
            </property>
           </widget>
          </item>
@@ -154,9 +166,9 @@ QMenu::item:pressed
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_5">
        <item>
-        <widget class="QCommandLinkButton" name="commandLinkButton">
+        <widget class="QCommandLinkButton" name="button_exit">
          <property name="text">
-          <string>CommandLinkButton</string>
+          <string>Exit</string>
          </property>
         </widget>
        </item>

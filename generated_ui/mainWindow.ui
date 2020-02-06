@@ -28,6 +28,11 @@
 	background-color: #333;
 }
 
+QLabel
+{
+	color: white;
+}
+
 QPushButton
 {
 	background: #ff0000;
@@ -107,6 +112,8 @@ QMenu::item:pressed
        <property name="font">
         <font>
          <pointsize>10</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
         </font>
        </property>
        <property name="text">
@@ -145,6 +152,56 @@ QMenu::item:pressed
             <string>Stop</string>
            </property>
           </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="1">
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_PXI">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>PXI Slot Status</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QLed" name="led_PXI">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="3">
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
        </item>
@@ -341,6 +398,11 @@ QMenu::item:pressed
    <extends>QWidget</extends>
    <header>pyqtgraph</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QLed</class>
+   <extends>QPushButton</extends>
+   <header>promotions/qled</header>
   </customwidget>
  </customwidgets>
  <resources/>

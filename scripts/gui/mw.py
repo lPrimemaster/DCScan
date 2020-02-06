@@ -106,6 +106,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.addButtonCallbackAnonymous('button_stop' , lambda: (self.stopTimedEvent('getData'), self.serverHandler.stopServerAcquisition()))
         self.addButtonCallbackAnonymous('button_exit' , lambda: (self.serverHandler.signalTerminate(), QtWidgets.QApplication.quit()))
 
+        # Setup other widgets
+        self.led_PXI.turn_on()
+        self.led_PXI.setFixedSize(20, 20)
+
     def getData(self):
         cbd_list = list(vars.DReserved_totals.values())
         list_size = len(cbd_list) # This is the angle entry in dict (normalized)

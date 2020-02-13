@@ -135,3 +135,20 @@ int ScrollByRelativeCoord(int iRows)
 		return 0;
 	}
 }
+
+std::vector<std::string> getNIDevices()
+{
+	char buffer[1024];
+	DAQmxGetSysDevNames(buffer, 1024 * sizeof(char));
+
+	std::istringstream f(buffer);
+	std::string value;
+	std::vector<std::string> ret;
+
+	while (getline(f, value, ',')) 
+	{
+		ret.push_back(value);
+	}
+
+	return ret;
+}

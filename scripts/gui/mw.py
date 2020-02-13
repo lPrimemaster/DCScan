@@ -8,6 +8,7 @@ if not len(sys.argv):
 	sys.path.append('./generated_ui/')
 	sys.path.append('./scripts/')
 	sys.path.append('./scripts/gui/')
+	sys.path.append('./scripts/util/')
 	
 # Qt Visuals
 from PyQt5 import QtWidgets, uic
@@ -31,6 +32,7 @@ import DCS_Data as dcsd
 # Data configuration in memory
 import variables as vars
 import data_callback as dcb
+import util.info_callback as icb
 
 # Control Module
 import backend_handler as bh
@@ -43,6 +45,7 @@ sys.stderr.write('System path: {}\n' .format(sys.path))
 
 # Register C++ callbacks
 dcsd.registerDataCallback('data_callback', 'data_callback')
+dcsd.registerInfoCallback('info_callback', 'info_callback')
 
 class MainWindow(QtWidgets.QMainWindow):
 
@@ -68,13 +71,14 @@ class MainWindow(QtWidgets.QMainWindow):
     def addButtonCallbackAnonymous(self, button, callback):
     	getattr(self, button).clicked.connect(callback)
 
-    def addTimedEvent(self, name, ms=1000):
+    def addTimedEvent(self, name, ms=1000, start=True):
         self.timer[name] = QTimer()
         self.timer[name].timeout.connect(getattr(self, name))
-        # self.timer[name].start(ms) -- DONT START BY DEFAULT!
+        if start: 
+            self.timer[name].start(ms)
 
     def startTimedEvent(self, name, ms=1000):
-    	self.timer[name].start()
+    	self.timer[name].start(ms)
 
     def stopTimedEvent(self, name):
     	self.timer[name].stop()
@@ -97,7 +101,8 @@ class MainWindow(QtWidgets.QMainWindow):
         left.setTickSpacing(1, 0.5)
 
         # Setup Async Events
-        self.addTimedEvent('getData', 50) # 20 tps
+        self.addTimedEvent('getData', start=False) # 20 tps
+        self.addTimedEvent('updateStatus', 1000) # 1 tps
 
         # Setup buttons
         self.addButtonCallbackAnonymous('button_start', lambda: (self.startTimedEvent('getData', 50), self.serverHandler.startServerAcquisition()))
@@ -125,8 +130,15 @@ class MainWindow(QtWidgets.QMainWindow):
     def plot(self, x, y):
         self.plt.plot(x, y, pen=None, symbol='o')  # setting pen=None disables line drawing
 
+    def updateStatus(self):
+        for key in vars.DReserved_status.keys():
+            if vars.DReserved_status[key] == 0:
+                getattr(self, key).turn_off()
+            elif vars.DReserved_status[key] == 1:
+                getattr(self, key).turn_on()
+
 def main():
-	dcsd.registerDataCallback('data_callback', 'data_callback')
+	# dcsd.registerDataCallback('data_callback', 'data_callback')
 
 	app = QtWidgets.QApplication(sys.argv)
 	main = MainWindow()

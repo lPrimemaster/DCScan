@@ -20,12 +20,23 @@ void acquireThread(std::atomic<int>* flags, void * data)
 	task.addTimer(ado->tproperties.timer);
 	task.addEventCallback(EveryNCallback, nullptr, ado->tproperties.timer.samplesPerChannel, 0);
 
+
 	//task.start(); //This marks the starting time of acquisition (NI-DAQmx reference manual)
 
 	//TODO: This is just useless, make a dealocation on the registered tasks instead of being lazy
 	while (flags->load() == THREAD_RUN)
 	{
-		std::this_thread::yield();
+		if (CallBackRegistries::info_callback.ptr())
+		{
+
+			if (getNIDevices().size() == 0)
+			{
+				py::gil_scoped_acquire acquire;
+				CallBackRegistries::info_callback("led_PXI", 0);
+				py::gil_scoped_release release;
+			}
+		}
+		//std::this_thread::yield();
 	}
 
 	//task.stop();

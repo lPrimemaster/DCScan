@@ -57,6 +57,8 @@ int main(int argc, char* argv[])
 	PyScript::setWorkingDir("scripts/gui");
 	PyScript script("mw.py");
 
+	//std::cout << getNIDevices()[0] << std::endl;
+
 	//Redirect cerr and stderr to file
 	FILE* nstderr = NULL;
 	const std::string VERSION = GET_VERSION_STR();
@@ -120,7 +122,6 @@ int main(int argc, char* argv[])
 
 	//PerfCount::PrintValidProcTimes();
 	PerfCount::Init();
-	//PerfCount::AddCounter(L"\\Process(DCScan)\\% Processor Time");
 	PerfCount::AddCounter(L"\\Processor(_Total)\\% Processor Time", PerfCount::CounterID::PROCESSOR_TIME);
 	//PerfCount::AddCounter(L"\\Memory\\Write Copies/sec", PerfCount::CounterID::MEMCOPIES_SEC);
 

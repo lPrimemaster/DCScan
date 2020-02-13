@@ -33,6 +33,12 @@ void registerDataCounter(std::string function, std::string module)
 	CallBackRegistries::data_count_callback = py::reinterpret_borrow<py::function>(py::module::import(module.c_str()).attr(function.c_str()));
 }
 
+void registerInfoCallback(std::string function, std::string module)
+{
+	namespace py = pybind11;
+	CallBackRegistries::info_callback = py::reinterpret_borrow<py::function>(py::module::import(module.c_str()).attr(function.c_str()));
+}
+
 void setAcquisitionState(int state)
 {
 	Task* mdt = Task::GetRegisteredTask("mainDataTask");

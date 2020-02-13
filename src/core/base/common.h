@@ -20,6 +20,9 @@ int ScrollByAbsoluteCoord(int iRows);
 //Scroll console relative
 int ScrollByRelativeCoord(int iRows);
 
+//Get NI devices in the system
+std::vector<std::string> getNIDevices();
+
 //int pointer converter
 template<typename T>
 inline std::vector<intptr_t> convertToIntPointerH(T first)

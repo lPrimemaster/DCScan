@@ -35,10 +35,13 @@ struct CallbackPacket
 struct CallBackRegistries
 {
 	static inline py::function data_count_callback;
+	static inline py::function info_callback;
 };
 
 int32 __cdecl EveryNCallback(TaskHandle taskHandle, int32 everyNsamplesEventType, uInt32 nSamples, void *callbackData);
 
 void registerDataCounter(std::string function, std::string module);
+
+void registerInfoCallback(std::string function, std::string module);
 
 void setAcquisitionState(int state);

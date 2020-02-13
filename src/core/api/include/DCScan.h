@@ -82,6 +82,7 @@ PYBIND11_EMBEDDED_MODULE(DCS_Data, m)
 	m.def("lastPacketTimeNS", &getBEMC<long long, 1,    DC_Data::TIME_DATA>);
 
 	m.def("registerDataCallback", &registerDataCounter);
+	m.def("registerInfoCallback", &registerInfoCallback);
 }
 
 //Backend Control Module

@@ -112,7 +112,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.addButtonCallbackAnonymous('button_exit' , lambda: (self.serverHandler.signalTerminate(), QtWidgets.QApplication.quit()))
 
         # Setup other widgets
-        self.led_PXI.turn_on()
+        self.led_PXI.turn_off()
         self.led_PXI.setFixedSize(20, 20)
 
     def getData(self):

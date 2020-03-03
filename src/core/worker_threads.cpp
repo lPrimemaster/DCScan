@@ -20,25 +20,39 @@ void acquireThread(std::atomic<int>* flags, void * data)
 	task.addTimer(ado->tproperties.timer);
 	task.addEventCallback(EveryNCallback, nullptr, ado->tproperties.timer.samplesPerChannel, 0);
 
-
+	//Start and stop are now handled client side only
 	//task.start(); //This marks the starting time of acquisition (NI-DAQmx reference manual)
 
 	//TODO: This is just useless, make a dealocation on the registered tasks instead of being lazy
+
+	auto const devices = getNIDevices();
+
 	while (flags->load() == THREAD_RUN)
 	{
 		if (CallBackRegistries::info_callback.ptr())
 		{
 
-			if (getNIDevices().size() == 0)
+			if (devices.size() == 0)
 			{
 				py::gil_scoped_acquire acquire;
 				CallBackRegistries::info_callback("led_PXI", 0);
 				py::gil_scoped_release release;
 			}
+			else
+			{
+				py::gil_scoped_acquire acquire;
+				CallBackRegistries::info_callback("led_PXI", 1);
+				py::gil_scoped_release release;
+			}
+			break;
 		}
-		//std::this_thread::yield();
 	}
 
+	while (flags->load() == THREAD_RUN)
+	{
+		std::this_thread::yield();
+	}
+	
 	//task.stop();
 
 	flags->store(THREAD_ENDED);
@@ -139,7 +153,7 @@ void processThread(std::atomic<int>* flags, void * data)
 			std::for_each(places.begin(), places.end(), [&](const size_t& val) { inplace_ns.push_back(getLocal_ns(val)); });
 			std::for_each(inplace_ns.begin(), inplace_ns.end(), [&](const long long& val) { inplace_ts.push_back(Timer::apiTimeSystemHRC_NanoToTimestamp(val)); });
 			
-			//FIX: This loses the time lost between datapacket interchange (??? what is this ? 05/02/2020)
+			//FIX: This does no take time lost between datapacket interchange to account (??? what is this ? 05/02/2020)
 			auto delta_ns = count != 0 ? *(inplace_ns.end() - 1) - *inplace_ns.begin() : 0;
 
 			try
